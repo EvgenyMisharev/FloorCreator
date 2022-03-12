@@ -1,0 +1,14 @@
+﻿<Window x:Class="FloorCreator.FloorCreatorProgressBarWPF"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:FloorCreator"
+             mc:Ignorable="d" 
+             d:DesignHeight="100" d:DesignWidth="450" Title="Нужно немного подождать..." MaxHeight="100" MaxWidth="450"
+             MinHeight="100" MinWidth="450" WindowStyle="ToolWindow" WindowStartupLocation="CenterScreen"
+             Topmost="True">
+    <Grid>
+        <ProgressBar Name="pb_FloorCreatorProgressBar" Margin="10" Value="0"/>
+    </Grid>
+</Window>
