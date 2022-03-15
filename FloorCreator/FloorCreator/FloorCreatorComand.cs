@@ -24,6 +24,7 @@ namespace FloorCreator
             List<FloorType> floorTypesList = new FilteredElementCollector(doc)
                 .OfClass(typeof(FloorType))
                 .Where(f => f.Category.Id.IntegerValue.Equals((int)BuiltInCategory.OST_Floors))
+                .Where(f => f.get_Parameter(BuiltInParameter.ALL_MODEL_MODEL) != null)
                 .Where(f => f.get_Parameter(BuiltInParameter.ALL_MODEL_MODEL).AsString() == "Пол" 
                 || f.get_Parameter(BuiltInParameter.ALL_MODEL_MODEL).AsString() == "Полы")
                 .Cast<FloorType>()
