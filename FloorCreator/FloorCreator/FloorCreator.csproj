@@ -58,6 +58,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AlphanumComparatorFastString.cs" />
     <Compile Include="FloorCreatorComand.cs" />
     <Compile Include="FloorCreatorProgressBarWPF.xaml.cs">
       <DependentUpon>FloorCreatorProgressBarWPF.xaml</DependentUpon>

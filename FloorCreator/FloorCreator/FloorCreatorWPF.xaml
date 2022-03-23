@@ -5,8 +5,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:FloorCreator"
              mc:Ignorable="d" 
-             Title="Полы" Height="300" Width="400" 
-             MinHeight="300" MinWidth="400" MaxHeight="300"
+             Title="Полы" Height="300" Width="600" 
+             MinHeight="300" MinWidth="600" MaxHeight="300"
              WindowStyle="ToolWindow" WindowStartupLocation="CenterScreen" KeyDown="FloorCreatorWPF_KeyDown">
     <Grid>
         <GroupBox x:Name="groupBox_FloorCreationOption" Header="Выберите опцию:" Margin="10,10,10,45">
@@ -16,7 +16,7 @@
                     <RowDefinition Height="50*"/>
                 </Grid.RowDefinitions>
                 <RadioButton x:Name="rbt_ManualCreation" Content="Создать вручную" Margin="10,10,10,0" VerticalAlignment="Top" Height="15"  Checked = "groupBox_FloorCreationOptionCheckedRB"/>
-                <ComboBox x:Name="comboBox_FloorType" Margin="10,30,10,10" VerticalAlignment="Top" Height="25" VerticalContentAlignment="Center"/>
+                <ComboBox x:Name="comboBox_FloorType" Margin="10,30,10,10" VerticalAlignment="Top" Height="25" VerticalContentAlignment="Center" IsEditable="True"/>
 
                 <RadioButton x:Name="rbt_CreateFromParameter" Content='Создать из параметра "Отделка пола"' Margin="10,10,10,0" Grid.Row="1" VerticalAlignment="Top" Height="15" Checked = "groupBox_FloorCreationOptionCheckedRB"/>
                 <GroupBox x:Name="groupBox_InRooms" Header="В помещениях:" Margin="10,30,10,10" Grid.Row="1">

@@ -28,7 +28,7 @@ namespace FloorCreator
                 .Where(f => f.get_Parameter(BuiltInParameter.ALL_MODEL_MODEL).AsString() == "Пол" 
                 || f.get_Parameter(BuiltInParameter.ALL_MODEL_MODEL).AsString() == "Полы")
                 .Cast<FloorType>()
-                .OrderBy(f => f.Name)
+                .OrderBy(f => f.Name, new AlphanumComparatorFastString())
                 .ToList();
 
             //Вызов формы
