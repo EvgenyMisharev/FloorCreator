@@ -13,7 +13,6 @@ namespace FloorCreator
     [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
     class FloorCreatorCommand : IExternalCommand
     {
-        //СОБРАТЬ ПРЕДУПРЕЖДЕНИЯ ПО ПОМЕЩЕНИЯМ!!!!
         FloorCreatorProgressBarWPF floorCreatorProgressBarWPF;
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
         {
