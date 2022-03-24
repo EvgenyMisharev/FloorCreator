@@ -25,6 +25,8 @@ namespace FloorCreator
         public string InRoomsSelectedName;
         public FloorType SelectedFloorType;
 
+        FloorCreatorSettings FloorCreatorSettingsParam = null;
+
         public FloorCreatorWPF(List<FloorType> floorTypesList)
         {
             InitializeComponent();
@@ -32,9 +34,19 @@ namespace FloorCreator
 
             comboBox_FloorType.ItemsSource = floorTypesList;
             comboBox_FloorType.DisplayMemberPath = "Name";
-            if(floorTypesList.Count != 0)
+
+            FloorCreatorSettingsParam = FloorCreatorSettings.GetSettings();
+            if(FloorCreatorSettingsParam.FloorTapeName != null)
             {
-                comboBox_FloorType.SelectedItem = comboBox_FloorType.Items.GetItemAt(0);
+                comboBox_FloorType.SelectedItem = floorTypesList
+                    .FirstOrDefault(ft => ft.Name == FloorCreatorSettingsParam.FloorTapeName);
+            }
+            else
+            {
+                if (floorTypesList.Count != 0)
+                {
+                    comboBox_FloorType.SelectedItem = comboBox_FloorType.Items.GetItemAt(0);
+                }
             }
         }
 
@@ -60,6 +72,7 @@ namespace FloorCreator
         private void btn_Ok_Click(object sender, RoutedEventArgs e)
         {
             GetFormSelectionResult();
+            SaveSettings();
             DialogResult = true;
             Close();
         }
@@ -74,6 +87,7 @@ namespace FloorCreator
             if (e.Key == Key.Enter || e.Key == Key.Space)
             {
                 GetFormSelectionResult();
+                SaveSettings();
                 DialogResult = true;
                 Close();
             }
@@ -96,6 +110,12 @@ namespace FloorCreator
                 .FirstOrDefault(rb => rb.IsChecked.Value == true)
                 .Name;
             SelectedFloorType = comboBox_FloorType.SelectedItem as FloorType;
+        }
+
+        private void SaveSettings()
+        {
+            FloorCreatorSettingsParam.FloorTapeName = SelectedFloorType.Name;
+            FloorCreatorSettingsParam.SaveSettings();
         }
     }
 }

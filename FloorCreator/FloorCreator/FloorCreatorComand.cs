@@ -52,7 +52,15 @@ namespace FloorCreator
                 if (roomList.Count == 0)
                 {
                     RoomSelectionFilter selFilter = new RoomSelectionFilter();
-                    IList<Reference> selRooms = sel.PickObjects(ObjectType.Element, selFilter, "Выберите помещения!");
+                    IList<Reference> selRooms = null;
+                    try
+                    {
+                        selRooms = sel.PickObjects(ObjectType.Element, selFilter, "Выберите помещения!");
+                    }
+                    catch (Autodesk.Revit.Exceptions.OperationCanceledException)
+                    {
+                        return Result.Cancelled;
+                    }
 
                     foreach (Reference roomRef in selRooms)
                     {
@@ -183,7 +191,15 @@ namespace FloorCreator
                     if (roomList.Count == 0)
                     {
                         RoomSelectionFilter selFilter = new RoomSelectionFilter();
-                        IList<Reference> selRooms = sel.PickObjects(ObjectType.Element, selFilter, "Выберите помещения!");
+                        IList<Reference> selRooms = null;
+                        try
+                        {
+                            selRooms = sel.PickObjects(ObjectType.Element, selFilter, "Выберите помещения!");
+                        }
+                        catch (Autodesk.Revit.Exceptions.OperationCanceledException)
+                        {
+                            return Result.Cancelled;
+                        }
 
                         foreach (Reference roomRef in selRooms)
                         {

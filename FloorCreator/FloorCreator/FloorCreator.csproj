@@ -63,6 +63,7 @@
     <Compile Include="FloorCreatorProgressBarWPF.xaml.cs">
       <DependentUpon>FloorCreatorProgressBarWPF.xaml</DependentUpon>
     </Compile>
+    <Compile Include="FloorCreatorSettings.cs" />
     <Compile Include="FloorCreatorWPF.xaml.cs">
       <DependentUpon>FloorCreatorWPF.xaml</DependentUpon>
     </Compile>
