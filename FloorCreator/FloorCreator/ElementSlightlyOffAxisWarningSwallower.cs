@@ -7,18 +7,15 @@ using System.Threading.Tasks;
 
 namespace FloorCreator
 {
-    class FloorIntersectionWarningSwallower : IFailuresPreprocessor
+    class ElementSlightlyOffAxisWarningSwallower : IFailuresPreprocessor
     {
         public FailureProcessingResult PreprocessFailures(FailuresAccessor failuresAccessor)
         {
+
             IList<FailureMessageAccessor> failuresList = failuresAccessor.GetFailureMessages();
             foreach (FailureMessageAccessor fa in failuresList)
             {
-                if (BuiltInFailures.OverlapFailures.FloorsOverlap == fa.GetFailureDefinitionId())
-                {
-                    failuresAccessor.DeleteWarning(fa);
-                }
-                else if (BuiltInFailures.InaccurateFailures.InaccurateSketchLine == fa.GetFailureDefinitionId())
+                if (BuiltInFailures.InaccurateFailures.InaccurateSketchLine == fa.GetFailureDefinitionId())
                 {
                     failuresAccessor.DeleteWarning(fa);
                 }

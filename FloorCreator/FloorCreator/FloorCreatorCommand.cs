@@ -172,7 +172,14 @@ namespace FloorCreator
                             t.Start("Вырезание проемов");
                             if (secondRoomCurves.Size != 0)
                             {
-                                doc.Create.NewOpening(floor, secondRoomCurves, true);
+                                try
+                                {
+                                    doc.Create.NewOpening(floor, secondRoomCurves, true);
+                                }
+                                catch
+                                {
+
+                                }
                             }
                             t.Commit();
                         }
@@ -303,8 +310,17 @@ namespace FloorCreator
 
 
                                     t.Start("Создание плиты");
-                                    Floor floor = doc.Create.NewFloor(firstRoomCurves, typeFromParameter, roomLevel, false);
-
+                                    Floor floor = null;
+                                    try
+                                    {
+                                        floor = doc.Create.NewFloor(firstRoomCurves, typeFromParameter, roomLevel, false);
+                                    }
+                                    catch
+                                    {
+                                        skippedRoomsList.Add(room);
+                                        t.Commit();
+                                        continue;
+                                    }
                                     //Удаление предупреждения о редактировании группы вне редактора
                                     FailureHandlingOptions failureHandlingOptions = t.GetFailureHandlingOptions();
                                     failureHandlingOptions.SetFailuresPreprocessor(new FloorIntersectionWarningSwallower());
@@ -315,13 +331,20 @@ namespace FloorCreator
                                     t.Start("Вырезание проемов");
                                     if (secondRoomCurves.Size != 0)
                                     {
-                                        doc.Create.NewOpening(floor, secondRoomCurves, true);
+                                        try
+                                        {
+                                            doc.Create.NewOpening(floor, secondRoomCurves, true);
+                                        }
+                                        catch
+                                        {
+
+                                        }
                                     }
                                     t.Commit();
                                 }
                                 else
                                 {
-                                    skippedRoomsList.Add(room);
+                                    //skippedRoomsList.Add(room);
                                 }
 
                             }
@@ -444,7 +467,17 @@ namespace FloorCreator
 
 
                                     t.Start("Создание плиты");
-                                    Floor floor = doc.Create.NewFloor(firstRoomCurves, typeFromParameter, roomLevel, false);
+                                    Floor floor = null;
+                                    try
+                                    {
+                                        floor = doc.Create.NewFloor(firstRoomCurves, typeFromParameter, roomLevel, false);
+                                    }
+                                    catch
+                                    {
+                                        skippedRoomsList.Add(room);
+                                        t.Commit();
+                                        continue;
+                                    }
                                     //Удаление предупреждения о редактировании группы вне редактора
                                     FailureHandlingOptions failureHandlingOptions = t.GetFailureHandlingOptions();
                                     failureHandlingOptions.SetFailuresPreprocessor(new FloorIntersectionWarningSwallower());
@@ -455,13 +488,20 @@ namespace FloorCreator
                                     t.Start("Вырезание проемов");
                                     if (secondRoomCurves.Size != 0)
                                     {
-                                        doc.Create.NewOpening(floor, secondRoomCurves, true);
+                                        try
+                                        {
+                                            doc.Create.NewOpening(floor, secondRoomCurves, true);
+                                        }
+                                        catch
+                                        {
+
+                                        }
                                     }
                                     t.Commit();
                                 }
                                 else
                                 {
-                                    skippedRoomsList.Add(room);
+                                    //skippedRoomsList.Add(room);
                                 }
                             }
                             floorCreatorProgressBarWPF.Dispatcher.Invoke(() => floorCreatorProgressBarWPF.Close());

@@ -59,6 +59,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AlphanumComparatorFastString.cs" />
+    <Compile Include="ElementSlightlyOffAxisWarningSwallower.cs" />
     <Compile Include="FloorCreatorCommand.cs" />
     <Compile Include="FloorCreatorProgressBarWPF.xaml.cs">
       <DependentUpon>FloorCreatorProgressBarWPF.xaml</DependentUpon>
