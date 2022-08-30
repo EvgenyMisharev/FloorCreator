@@ -160,7 +160,19 @@ namespace FloorCreator
 
                             //Создание нового пола
                             t.Start("Создание плиты");
+#if R2019 || R2020 || R2021 || R2022
                             Floor floor = doc.Create.NewFloor(firstRoomCurves, selectedFloorType, roomLevel, false);
+#else
+                            List<Curve> curvesListToCurveLoop = new List<Curve>();
+                            foreach (Curve c in firstRoomCurves)
+                            {
+                                curvesListToCurveLoop.Add(c);
+                            }
+                            CurveLoop cl = CurveLoop.Create(curvesListToCurveLoop);
+                            List<CurveLoop> curveLoopList = new List<CurveLoop>();
+                            curveLoopList.Add(cl);
+                            Floor floor = Floor.Create(doc, curveLoopList, selectedFloorType.Id, roomLevel.Id);
+#endif
 
                             //Удаление предупреждения о редактировании группы вне редактора
                             FailureHandlingOptions failureHandlingOptions = t.GetFailureHandlingOptions();
@@ -313,7 +325,19 @@ namespace FloorCreator
                                     Floor floor = null;
                                     try
                                     {
+#if R2019 || R2020 || R2021 || R2022
                                         floor = doc.Create.NewFloor(firstRoomCurves, typeFromParameter, roomLevel, false);
+#else
+                                        List<Curve> curvesListToCurveLoop = new List<Curve>();
+                                        foreach (Curve c in firstRoomCurves)
+                                        {
+                                            curvesListToCurveLoop.Add(c);
+                                        }
+                                        CurveLoop cl = CurveLoop.Create(curvesListToCurveLoop);
+                                        List<CurveLoop> curveLoopList = new List<CurveLoop>();
+                                        curveLoopList.Add(cl);
+                                        floor = Floor.Create(doc, curveLoopList, selectedFloorType.Id, roomLevel.Id);
+#endif
                                     }
                                     catch
                                     {
@@ -470,7 +494,19 @@ namespace FloorCreator
                                     Floor floor = null;
                                     try
                                     {
+#if R2019 || R2020 || R2021 || R2022
                                         floor = doc.Create.NewFloor(firstRoomCurves, typeFromParameter, roomLevel, false);
+#else
+                                        List<Curve> curvesListToCurveLoop = new List<Curve>();
+                                        foreach (Curve c in firstRoomCurves)
+                                        {
+                                            curvesListToCurveLoop.Add(c);
+                                        }
+                                        CurveLoop cl = CurveLoop.Create(curvesListToCurveLoop);
+                                        List<CurveLoop> curveLoopList = new List<CurveLoop>();
+                                        curveLoopList.Add(cl);
+                                        floor = Floor.Create(doc, curveLoopList, selectedFloorType.Id, roomLevel.Id);
+#endif
                                     }
                                     catch
                                     {
