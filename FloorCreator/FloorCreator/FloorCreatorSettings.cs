@@ -11,6 +11,7 @@ namespace FloorCreator
     public class FloorCreatorSettings
     {
         public string FloorTapeName { get; set; }
+        public string FloorLevelOffset{get;set;}
 
         public static FloorCreatorSettings GetSettings()
         {

@@ -85,7 +85,7 @@
     <Reference Include="System.Xml" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
-      <Choose>
+  <Choose>
     <When Condition=" '$(Configuration)'=='R2019' ">
       <ItemGroup>
         <Reference Include="RevitAPI">
@@ -150,7 +150,7 @@
         </Reference>
       </ItemGroup>
     </When>
-	    <When Condition=" '$(Configuration)'=='R2023' ">
+    <When Condition=" '$(Configuration)'=='R2023' ">
       <ItemGroup>
         <Reference Include="RevitAPI">
           <HintPath>C:\Program Files\Autodesk\Revit 2023\RevitAPI.dll</HintPath>
@@ -166,7 +166,7 @@
         </Reference>
       </ItemGroup>
     </When>
-  </Choose> 
+  </Choose>
   <ItemGroup>
     <Compile Include="AlphanumComparatorFastString.cs" />
     <Compile Include="ElementSlightlyOffAxisWarningSwallower.cs" />

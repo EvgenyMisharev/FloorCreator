@@ -32,7 +32,12 @@
             </Grid>
         </GroupBox>
 
+        <Label x:Name="label_FloorLevelOffset" Content="Смещение от уровня:" HorizontalAlignment="Left" Margin="10,0,0,10" VerticalAlignment="Bottom" Width="130"/>
+        <TextBox x:Name="textBox_FloorLevelOffset" HorizontalAlignment="Left" Height="26" Margin="140,0,0,10" TextWrapping="Wrap" Text="0" VerticalAlignment="Bottom" Width="50" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+        <Label x:Name="label_FloorLevelOffsetMM" Content="мм" HorizontalAlignment="Left" Margin="190,0,0,10" VerticalAlignment="Bottom" Width="35"/>
+        
         <Button x:Name="btn_Ok" Content="Ок" HorizontalAlignment="Right" Margin="0,0,125,10" VerticalAlignment="Bottom" Width="100" Height="25" Click="btn_Ok_Click"/>
         <Button x:Name="btn_Cancel" Content="Отмена" HorizontalAlignment="Right" Margin="0,0,10,10" VerticalAlignment="Bottom" Width="100" Height="25" Click="btn_Cancel_Click"/>
+        
     </Grid>
 </Window>

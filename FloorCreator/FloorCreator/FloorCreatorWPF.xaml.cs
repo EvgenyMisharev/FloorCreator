@@ -12,6 +12,7 @@ namespace FloorCreator
         public string FloorCreationOptionSelectedName;
         public string InRoomsSelectedName;
         public FloorType SelectedFloorType;
+        public double FloorLevelOffset; 
 
         FloorCreatorSettings FloorCreatorSettingsParam = null;
 
@@ -35,6 +36,10 @@ namespace FloorCreator
                 {
                     comboBox_FloorType.SelectedItem = comboBox_FloorType.Items.GetItemAt(0);
                 }
+            }
+            if (FloorCreatorSettingsParam.FloorLevelOffset != null)
+            {
+                textBox_FloorLevelOffset.Text = FloorCreatorSettingsParam.FloorLevelOffset;
             }
         }
 
@@ -98,11 +103,13 @@ namespace FloorCreator
                 .FirstOrDefault(rb => rb.IsChecked.Value == true)
                 .Name;
             SelectedFloorType = comboBox_FloorType.SelectedItem as FloorType;
+            double.TryParse(textBox_FloorLevelOffset.Text, out FloorLevelOffset);
         }
 
         private void SaveSettings()
         {
             FloorCreatorSettingsParam.FloorTapeName = SelectedFloorType.Name;
+            FloorCreatorSettingsParam.FloorLevelOffset = textBox_FloorLevelOffset.Text;
             FloorCreatorSettingsParam.SaveSettings();
         }
     }

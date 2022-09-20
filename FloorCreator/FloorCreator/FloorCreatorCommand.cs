@@ -41,6 +41,7 @@ namespace FloorCreator
             string floorCreationOptionSelectedName = floorCreatorWPF.FloorCreationOptionSelectedName;
             string inRoomsSelectedName = floorCreatorWPF.InRoomsSelectedName;
             FloorType selectedFloorType = floorCreatorWPF.SelectedFloorType;
+            double floorLevelOffset = floorCreatorWPF.FloorLevelOffset / 304.8;
 
 
             //Ручное создание полов
@@ -162,6 +163,7 @@ namespace FloorCreator
                             t.Start("Создание плиты");
 #if R2019 || R2020 || R2021 || R2022
                             Floor floor = doc.Create.NewFloor(firstRoomCurves, selectedFloorType, roomLevel, false);
+                            floor.get_Parameter(BuiltInParameter.FLOOR_HEIGHTABOVELEVEL_PARAM).Set(floorLevelOffset);
 #else
                             List<Curve> curvesListToCurveLoop = new List<Curve>();
                             foreach (Curve c in firstRoomCurves)
@@ -172,6 +174,7 @@ namespace FloorCreator
                             List<CurveLoop> curveLoopList = new List<CurveLoop>();
                             curveLoopList.Add(cl);
                             Floor floor = Floor.Create(doc, curveLoopList, selectedFloorType.Id, roomLevel.Id);
+                            floor.get_Parameter(BuiltInParameter.FLOOR_HEIGHTABOVELEVEL_PARAM).Set(floorLevelOffset);
 #endif
 
                             //Удаление предупреждения о редактировании группы вне редактора
@@ -327,6 +330,7 @@ namespace FloorCreator
                                     {
 #if R2019 || R2020 || R2021 || R2022
                                         floor = doc.Create.NewFloor(firstRoomCurves, typeFromParameter, roomLevel, false);
+                                        floor.get_Parameter(BuiltInParameter.FLOOR_HEIGHTABOVELEVEL_PARAM).Set(floorLevelOffset);
 #else
                                         List<Curve> curvesListToCurveLoop = new List<Curve>();
                                         foreach (Curve c in firstRoomCurves)
@@ -337,6 +341,7 @@ namespace FloorCreator
                                         List<CurveLoop> curveLoopList = new List<CurveLoop>();
                                         curveLoopList.Add(cl);
                                         floor = Floor.Create(doc, curveLoopList, selectedFloorType.Id, roomLevel.Id);
+                                        floor.get_Parameter(BuiltInParameter.FLOOR_HEIGHTABOVELEVEL_PARAM).Set(floorLevelOffset);
 #endif
                                     }
                                     catch
@@ -496,6 +501,7 @@ namespace FloorCreator
                                     {
 #if R2019 || R2020 || R2021 || R2022
                                         floor = doc.Create.NewFloor(firstRoomCurves, typeFromParameter, roomLevel, false);
+                                        floor.get_Parameter(BuiltInParameter.FLOOR_HEIGHTABOVELEVEL_PARAM).Set(floorLevelOffset);
 #else
                                         List<Curve> curvesListToCurveLoop = new List<Curve>();
                                         foreach (Curve c in firstRoomCurves)
@@ -506,6 +512,7 @@ namespace FloorCreator
                                         List<CurveLoop> curveLoopList = new List<CurveLoop>();
                                         curveLoopList.Add(cl);
                                         floor = Floor.Create(doc, curveLoopList, selectedFloorType.Id, roomLevel.Id);
+                                        floor.get_Parameter(BuiltInParameter.FLOOR_HEIGHTABOVELEVEL_PARAM).Set(floorLevelOffset);
 #endif
                                     }
                                     catch
