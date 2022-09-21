@@ -5,21 +5,22 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:FloorCreator"
              mc:Ignorable="d" 
-             Title="Полы" Height="300" Width="600" 
-             MinHeight="300" MinWidth="600" MaxHeight="300"
+             Title="Полы" Height="330" Width="600" 
+             MinHeight="330" MinWidth="600" MaxHeight="330"
              WindowStyle="ToolWindow" WindowStartupLocation="CenterScreen" KeyDown="FloorCreatorWPF_KeyDown">
     <Grid>
-        <GroupBox x:Name="groupBox_FloorCreationOption" Header="Выберите опцию:" Margin="10,10,10,45">
+        <GroupBox x:Name="groupBox_FloorCreationOption" Header="Выберите опцию:" Margin="10,10,10,45" VerticalAlignment="Top" Height="230">
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="30*"/>
+                    <RowDefinition Height="50*"/>
                     <RowDefinition Height="50*"/>
                 </Grid.RowDefinitions>
-                <RadioButton x:Name="rbt_ManualCreation" Content="Создать вручную" Margin="10,10,10,0" VerticalAlignment="Top" Height="15"  Checked = "groupBox_FloorCreationOptionCheckedRB"/>
+                <RadioButton x:Name="rbt_ManualCreation" Content="Создать вручную" Margin="10,10,10,0" VerticalAlignment="Top" Height="20"  Checked = "groupBox_FloorCreationOptionCheckedRB" VerticalContentAlignment="Center"/>
                 <ComboBox x:Name="comboBox_FloorType" Margin="10,30,10,10" VerticalAlignment="Top" Height="25" VerticalContentAlignment="Center" IsEditable="True"/>
 
-                <RadioButton x:Name="rbt_CreateFromParameter" Content='Создать из параметра "Отделка пола"' Margin="10,10,10,0" Grid.Row="1" VerticalAlignment="Top" Height="15" Checked = "groupBox_FloorCreationOptionCheckedRB"/>
-                <GroupBox x:Name="groupBox_InRooms" Header="В помещениях:" Margin="10,30,10,10" Grid.Row="1">
+
+                <RadioButton x:Name="rbt_CreateFromParameter" Content='Создать из параметра "Отделка пола"' Margin="10,10,10,70" Grid.Row="1" VerticalAlignment="Bottom" Height="20" Checked = "groupBox_FloorCreationOptionCheckedRB" VerticalContentAlignment="Center"/>
+                <GroupBox x:Name="groupBox_InRooms" Header="В помещениях:" Margin="10,30,10,10" Grid.Row="1" VerticalAlignment="Bottom" Height="60">
                     <Grid Margin="0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="80*"/>
@@ -29,15 +30,16 @@
                         <RadioButton x:Name="rbt_InWholeProject" Content="Во всем проекте" Grid.Column="1" Margin="10,10,0,10" HorizontalAlignment="Left" VerticalContentAlignment="Center" Padding="5,0,0,0" VerticalAlignment="Center"/>
                     </Grid>
                 </GroupBox>
+                <TextBlock x:Name="textBlock" Margin="10,60,10,0" TextWrapping="Wrap" Text='*В свойствах Типа перекрытий, используемых в качестве пола, в параметр "Группа модели" необходимо вписать значение "Пол" или "Полы"'/>
             </Grid>
         </GroupBox>
 
         <Label x:Name="label_FloorLevelOffset" Content="Смещение от уровня:" HorizontalAlignment="Left" Margin="10,0,0,10" VerticalAlignment="Bottom" Width="130"/>
         <TextBox x:Name="textBox_FloorLevelOffset" HorizontalAlignment="Left" Height="26" Margin="140,0,0,10" TextWrapping="Wrap" Text="0" VerticalAlignment="Bottom" Width="50" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
         <Label x:Name="label_FloorLevelOffsetMM" Content="мм" HorizontalAlignment="Left" Margin="190,0,0,10" VerticalAlignment="Bottom" Width="35"/>
-        
+
         <Button x:Name="btn_Ok" Content="Ок" HorizontalAlignment="Right" Margin="0,0,125,10" VerticalAlignment="Bottom" Width="100" Height="25" Click="btn_Ok_Click"/>
         <Button x:Name="btn_Cancel" Content="Отмена" HorizontalAlignment="Right" Margin="0,0,10,10" VerticalAlignment="Bottom" Width="100" Height="25" Click="btn_Cancel_Click"/>
-        
+
     </Grid>
 </Window>
