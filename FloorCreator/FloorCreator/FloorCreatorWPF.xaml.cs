@@ -108,7 +108,10 @@ namespace FloorCreator
 
         private void SaveSettings()
         {
-            FloorCreatorSettingsParam.FloorTapeName = SelectedFloorType.Name;
+            if(SelectedFloorType != null)
+            {
+                FloorCreatorSettingsParam.FloorTapeName = SelectedFloorType.Name;
+            }
             FloorCreatorSettingsParam.FloorLevelOffset = textBox_FloorLevelOffset.Text;
             FloorCreatorSettingsParam.SaveSettings();
         }

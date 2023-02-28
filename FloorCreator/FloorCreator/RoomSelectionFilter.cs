@@ -5,7 +5,6 @@ namespace FloorCreator
 {
 	class RoomSelectionFilter : ISelectionFilter
 	{
-
 		public bool AllowElement(Autodesk.Revit.DB.Element elem)
 		{
 			if (elem is Room)
