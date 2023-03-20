@@ -7,7 +7,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="400" d:DesignWidth="400"
              Height="400" Width="400" MinHeight="400" MinWidth="400"
-             WindowStyle="ToolWindow" WindowStartupLocation="CenterScreen" KeyDown="SkippedRoomsDialogWPF_KeyDown" Title="Необработанные помещения">
+             WindowStyle="SingleBorderWindow" ResizeMode="NoResize" Icon="Resources/citrus.ico" WindowStartupLocation="CenterScreen" KeyDown="SkippedRoomsDialogWPF_KeyDown" Title="Необработанные помещения">
     <Grid>
         <ListBox x:Name="listBox_SkippedRooms" Margin="10,75,10,50" MouseDoubleClick ="listBox_SkippedRooms_MouseDoubleClick"/>
         <Button x:Name="btn_Ok" Content="Ок" HorizontalAlignment="Right" Margin="0,0,10,10" VerticalAlignment="Bottom" Width="100" Height="25" Click="btn_Ok_Click"/>

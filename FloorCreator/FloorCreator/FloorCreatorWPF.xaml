@@ -7,7 +7,7 @@
              mc:Ignorable="d" 
              Title="Полы" Height="330" Width="600" 
              MinHeight="330" MinWidth="600" MaxHeight="330"
-             WindowStyle="ToolWindow" WindowStartupLocation="CenterScreen" KeyDown="FloorCreatorWPF_KeyDown">
+             WindowStyle="SingleBorderWindow" ResizeMode="NoResize" Icon="Resources/citrus.ico" WindowStartupLocation="CenterScreen" KeyDown="FloorCreatorWPF_KeyDown">
     <Grid>
         <GroupBox x:Name="groupBox_FloorCreationOption" Header="Выберите опцию:" Margin="10,10,10,45" VerticalAlignment="Top" Height="230">
             <Grid>
