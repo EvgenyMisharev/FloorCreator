@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
 <FloorCreatorSettings xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <FloorTapeName>АР_Тип3_Пол линолеум_150</FloorTapeName>
+  <FloorTapeName>АР_Тип1_Пол кермогранит_150</FloorTapeName>
   <FloorLevelOffset>0</FloorLevelOffset>
 </FloorCreatorSettings>

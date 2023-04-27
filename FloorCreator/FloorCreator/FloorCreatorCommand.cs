@@ -273,6 +273,7 @@ namespace FloorCreator
                                         }
                                     }
                                 }
+
                                 //Удаление старого пола
                                 List<Floor> floorList = new FilteredElementCollector(doc)
                                     .OfClass(typeof(Floor))
@@ -285,7 +286,7 @@ namespace FloorCreator
                                     .ToList();
 
                                 FloorType typeFromParameter = floorTypesList
-                                    .FirstOrDefault(ft => ft.Name == room.get_Parameter(BuiltInParameter.ROOM_FINISH_FLOOR).AsString());
+                                    .FirstOrDefault(ft => ft.get_Parameter(BuiltInParameter.WINDOW_TYPE_ID).AsString() == room.get_Parameter(BuiltInParameter.ROOM_FINISH_FLOOR).AsString());
                                 if (typeFromParameter != null)
                                 {
                                     t.Start("Удаление старого пола");
@@ -350,13 +351,14 @@ namespace FloorCreator
                                         t.Commit();
                                         continue;
                                     }
+
                                     //Удаление предупреждения о редактировании группы вне редактора
                                     FailureHandlingOptions failureHandlingOptions = t.GetFailureHandlingOptions();
                                     failureHandlingOptions.SetFailuresPreprocessor(new FloorIntersectionWarningSwallower());
                                     t.SetFailureHandlingOptions(failureHandlingOptions);
                                     //СОБРАТЬ ПРЕДУПРЕЖДЕНИЯ ПО ПОМЕЩЕНИЯМ!!!!
-
                                     t.Commit();
+
                                     t.Start("Вырезание проемов");
                                     if (secondRoomCurves.Size != 0)
                                     {
@@ -456,7 +458,7 @@ namespace FloorCreator
                                     .OrderBy(f => f.Name)
                                     .ToList();
                                 FloorType typeFromParameter = floorTypesList
-                                    .FirstOrDefault(ft => ft.Name == room.get_Parameter(BuiltInParameter.ROOM_FINISH_FLOOR).AsString());
+                                    .FirstOrDefault(ft => ft.get_Parameter(BuiltInParameter.WINDOW_TYPE_ID).AsString() == room.get_Parameter(BuiltInParameter.ROOM_FINISH_FLOOR).AsString());
                                 if (typeFromParameter != null)
                                 {
                                     t.Start("Удаление старого пола");

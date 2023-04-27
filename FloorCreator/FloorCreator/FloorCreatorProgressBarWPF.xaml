@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:FloorCreator"
              mc:Ignorable="d" 
              d:DesignHeight="100" d:DesignWidth="450" Title="Полы создаются. Нужно немного подождать..." MaxHeight="100" MaxWidth="450"
-             MinHeight="100" MinWidth="450" WindowStyle="SingleBorderWindow" ResizeMode="NoResize" Icon="Resources/citrus.ico" WindowStartupLocation="CenterScreen"
+             MinHeight="100" MinWidth="450" WindowStyle="ToolWindow" WindowStartupLocation="CenterScreen"
              Topmost="True">
     <Grid>
         <ProgressBar Name="pb_FloorCreatorProgressBar" Margin="10" Value="0"/>

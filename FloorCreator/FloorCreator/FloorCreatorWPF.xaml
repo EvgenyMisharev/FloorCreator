@@ -7,7 +7,7 @@
              mc:Ignorable="d" 
              Title="Полы" Height="330" Width="600" 
              MinHeight="330" MinWidth="600" MaxHeight="330"
-             WindowStyle="SingleBorderWindow" ResizeMode="NoResize" Icon="Resources/citrus.ico" WindowStartupLocation="CenterScreen" KeyDown="FloorCreatorWPF_KeyDown">
+             WindowStyle="ToolWindow" WindowStartupLocation="CenterScreen" KeyDown="FloorCreatorWPF_KeyDown">
     <Grid>
         <GroupBox x:Name="groupBox_FloorCreationOption" Header="Выберите опцию:" Margin="10,10,10,45" VerticalAlignment="Top" Height="230">
             <Grid>
@@ -23,12 +23,11 @@
                 <GroupBox x:Name="groupBox_InRooms" Header="В помещениях:" Margin="10,30,10,10" Grid.Row="1" VerticalAlignment="Bottom" Height="60">
                     <Grid Margin="0">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="67*"/>
-                            <ColumnDefinition Width="197*"/>
-                            <ColumnDefinition Width="264*"/>
+                            <ColumnDefinition Width="80*"/>
+                            <ColumnDefinition Width="80*"/>
                         </Grid.ColumnDefinitions>
-                        <RadioButton x:Name="rbt_InSelected" Content="Выбранных" Margin="10,10,0,11" IsChecked="True" HorizontalAlignment="Left" VerticalContentAlignment="Center" Padding="5,0,0,0" VerticalAlignment="Center" Grid.ColumnSpan="2"/>
-                        <RadioButton x:Name="rbt_InWholeProject" Content="Во всем проекте" Grid.Column="2" Margin="10,10,0,11" HorizontalAlignment="Left" VerticalContentAlignment="Center" Padding="5,0,0,0" VerticalAlignment="Center"/>
+                        <RadioButton x:Name="rbt_InSelected" Content="Выбранных" Margin="10,10,0,10" IsChecked="True" HorizontalAlignment="Left" VerticalContentAlignment="Center" Padding="5,0,0,0" VerticalAlignment="Center"/>
+                        <RadioButton x:Name="rbt_InWholeProject" Content="Во всем проекте" Grid.Column="1" Margin="10,10,0,10" HorizontalAlignment="Left" VerticalContentAlignment="Center" Padding="5,0,0,0" VerticalAlignment="Center"/>
                     </Grid>
                 </GroupBox>
                 <TextBlock x:Name="textBlock" Margin="10,60,10,0" TextWrapping="Wrap" Text='*В свойствах Типа перекрытий, используемых в качестве пола, в параметр "Группа модели" необходимо вписать значение "Пол" или "Полы"'/>
