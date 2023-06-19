@@ -341,7 +341,7 @@ namespace FloorCreator
                                         CurveLoop cl = CurveLoop.Create(curvesListToCurveLoop);
                                         List<CurveLoop> curveLoopList = new List<CurveLoop>();
                                         curveLoopList.Add(cl);
-                                        floor = Floor.Create(doc, curveLoopList, selectedFloorType.Id, roomLevel.Id);
+                                        floor = Floor.Create(doc, curveLoopList, typeFromParameter.Id, roomLevel.Id);
                                         floor.get_Parameter(BuiltInParameter.FLOOR_HEIGHTABOVELEVEL_PARAM).Set(floorLevelOffset);
 #endif
                                     }
@@ -513,7 +513,7 @@ namespace FloorCreator
                                         CurveLoop cl = CurveLoop.Create(curvesListToCurveLoop);
                                         List<CurveLoop> curveLoopList = new List<CurveLoop>();
                                         curveLoopList.Add(cl);
-                                        floor = Floor.Create(doc, curveLoopList, selectedFloorType.Id, roomLevel.Id);
+                                        floor = Floor.Create(doc, curveLoopList, typeFromParameter.Id, roomLevel.Id);
                                         floor.get_Parameter(BuiltInParameter.FLOOR_HEIGHTABOVELEVEL_PARAM).Set(floorLevelOffset);
 #endif
                                     }
