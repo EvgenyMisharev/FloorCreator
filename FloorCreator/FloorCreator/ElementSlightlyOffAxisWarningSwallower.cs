@@ -1,9 +1,5 @@
 ﻿using Autodesk.Revit.DB;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FloorCreator
 {
@@ -15,7 +11,7 @@ namespace FloorCreator
             IList<FailureMessageAccessor> failuresList = failuresAccessor.GetFailureMessages();
             foreach (FailureMessageAccessor fa in failuresList)
             {
-                if (BuiltInFailures.InaccurateFailures.InaccurateSketchLine == fa.GetFailureDefinitionId())
+                if (BuiltInFailures.GroupFailures.AtomViolationWhenOnePlaceInstance == fa.GetFailureDefinitionId())
                 {
                     failuresAccessor.DeleteWarning(fa);
                 }

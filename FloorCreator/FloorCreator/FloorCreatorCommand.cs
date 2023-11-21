@@ -1,11 +1,12 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Architecture;
-using Autodesk.Revit.DB.Structure;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 
 namespace FloorCreator
@@ -16,19 +17,31 @@ namespace FloorCreator
         FloorCreatorProgressBarWPF floorCreatorProgressBarWPF;
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
         {
+            try
+            {
+                GetPluginStartInfo();
+            }
+            catch { }
+
             Document doc = commandData.Application.ActiveUIDocument.Document;
             Selection sel = commandData.Application.ActiveUIDocument.Selection;
-            
+
             //Типы полов для формы
             List<FloorType> floorTypesList = new FilteredElementCollector(doc)
                 .OfClass(typeof(FloorType))
                 .Where(f => f.Category.Id.IntegerValue.Equals((int)BuiltInCategory.OST_Floors))
                 .Where(f => f.get_Parameter(BuiltInParameter.ALL_MODEL_MODEL) != null)
-                .Where(f => f.get_Parameter(BuiltInParameter.ALL_MODEL_MODEL).AsString() == "Пол" 
+                .Where(f => f.get_Parameter(BuiltInParameter.ALL_MODEL_MODEL).AsString() == "Пол"
                 || f.get_Parameter(BuiltInParameter.ALL_MODEL_MODEL).AsString() == "Полы")
                 .Cast<FloorType>()
                 .OrderBy(f => f.Name, new AlphanumComparatorFastString())
                 .ToList();
+
+            if (floorTypesList.Count == 0)
+            {
+                TaskDialog.Show("Revit", "В проекте отсутствуют подготовленные типы полов! Обратитесь к инструкции через F1!");
+                return Result.Cancelled;
+            }
 
             //Вызов формы
             FloorCreatorWPF floorCreatorWPF = new FloorCreatorWPF(floorTypesList);
@@ -82,7 +95,7 @@ namespace FloorCreator
                         Thread.Sleep(100);
                         floorCreatorProgressBarWPF.pb_FloorCreatorProgressBar.Dispatcher.Invoke(() => floorCreatorProgressBarWPF.pb_FloorCreatorProgressBar.Minimum = 0);
                         floorCreatorProgressBarWPF.pb_FloorCreatorProgressBar.Dispatcher.Invoke(() => floorCreatorProgressBarWPF.pb_FloorCreatorProgressBar.Maximum = roomList.Count);
-                        
+
                         foreach (Room room in roomList)
                         {
                             step++;
@@ -145,7 +158,7 @@ namespace FloorCreator
                                 }
                                 //Подъем пола на 500
                                 floorSolid = SolidUtils.CreateTransformed(floorSolid, Transform.CreateTranslation(new XYZ(0, 0, 500 / 304.8)));
-                                
+
                                 //Поиск пересечения между полом и помещением
                                 Solid intersection = BooleanOperationsUtils.ExecuteBooleanOperation(floorSolid, roomSolid, BooleanOperationsType.Intersect);
                                 if (intersection != null)
@@ -197,6 +210,10 @@ namespace FloorCreator
                                 }
                             }
                             t.Commit();
+
+                            //Полы в дверные проемы
+
+
                         }
                         floorCreatorProgressBarWPF.Dispatcher.Invoke(() => floorCreatorProgressBarWPF.Close());
                         transGroup.Assimilate();
@@ -227,7 +244,7 @@ namespace FloorCreator
                             roomList.Add(doc.GetElement(roomRef) as Room);
                         }
                     }
-                    List<Room> skippedRoomsList = new List<Room>();
+                    //List<Room> skippedRoomsList = new List<Room>();
                     using (TransactionGroup transGroup = new TransactionGroup(doc))
                     {
                         using (Transaction t = new Transaction(doc))
@@ -242,7 +259,7 @@ namespace FloorCreator
                             Thread.Sleep(100);
                             floorCreatorProgressBarWPF.pb_FloorCreatorProgressBar.Dispatcher.Invoke(() => floorCreatorProgressBarWPF.pb_FloorCreatorProgressBar.Minimum = 0);
                             floorCreatorProgressBarWPF.pb_FloorCreatorProgressBar.Dispatcher.Invoke(() => floorCreatorProgressBarWPF.pb_FloorCreatorProgressBar.Maximum = roomList.Count);
-                            
+
                             foreach (Room room in roomList)
                             {
                                 step++;
@@ -347,7 +364,7 @@ namespace FloorCreator
                                     }
                                     catch
                                     {
-                                        skippedRoomsList.Add(room);
+                                        //skippedRoomsList.Add(room);
                                         t.Commit();
                                         continue;
                                     }
@@ -383,12 +400,12 @@ namespace FloorCreator
                             transGroup.Assimilate();
                         }
                     }
-                    if (skippedRoomsList.Count != 0)
-                    {
-                        skippedRoomsList = skippedRoomsList.OrderBy(r => r.Number).ToList();
-                        SkippedRoomsDialogWPF skippedRoomsDialogWPF = new SkippedRoomsDialogWPF(commandData, skippedRoomsList);
-                        skippedRoomsDialogWPF.ShowDialog();
-                    }
+                    //if (skippedRoomsList.Count != 0)
+                    //{
+                    //    skippedRoomsList = skippedRoomsList.OrderBy(r => r.Number).ToList();
+                    //    SkippedRoomsDialogWPF skippedRoomsDialogWPF = new SkippedRoomsDialogWPF(commandData, skippedRoomsList);
+                    //    skippedRoomsDialogWPF.ShowDialog();
+                    //}
                 }
                 else if (inRoomsSelectedName == "rbt_InWholeProject")
                 {
@@ -400,7 +417,7 @@ namespace FloorCreator
                         .Where(r => Math.Round(r.Area, 6) != 0)
                         .ToList();
 
-                    List<Room> skippedRoomsList = new List<Room>();
+                    //List<Room> skippedRoomsList = new List<Room>();
                     using (TransactionGroup transGroup = new TransactionGroup(doc))
                     {
                         using (Transaction t = new Transaction(doc))
@@ -519,7 +536,7 @@ namespace FloorCreator
                                     }
                                     catch
                                     {
-                                        skippedRoomsList.Add(room);
+                                        //skippedRoomsList.Add(room);
                                         t.Commit();
                                         continue;
                                     }
@@ -553,16 +570,37 @@ namespace FloorCreator
                             transGroup.Assimilate();
                         }
                     }
-                    if(skippedRoomsList.Count != 0)
-                    {
-                        skippedRoomsList = skippedRoomsList.OrderBy(r => r.Number).ToList();
-                        SkippedRoomsDialogWPF skippedRoomsDialogWPF = new SkippedRoomsDialogWPF(commandData, skippedRoomsList);
-                        skippedRoomsDialogWPF.ShowDialog();
-                    }
+                    //if(skippedRoomsList.Count != 0)
+                    //{
+                    //    skippedRoomsList = skippedRoomsList.OrderBy(r => r.Number).ToList();
+                    //    SkippedRoomsDialogWPF skippedRoomsDialogWPF = new SkippedRoomsDialogWPF(commandData, skippedRoomsList);
+                    //    skippedRoomsDialogWPF.ShowDialog();
+                    //}
                 }
             }
 
             return Result.Succeeded;
+        }
+        private static void GetPluginStartInfo()
+        {
+            // Получаем сборку, в которой выполняется текущий код
+            Assembly thisAssembly = Assembly.GetExecutingAssembly();
+            string assemblyName = "FloorCreator";
+            string assemblyNameRus = "Полы";
+            string assemblyFolderPath = Path.GetDirectoryName(thisAssembly.Location);
+
+            int lastBackslashIndex = assemblyFolderPath.LastIndexOf("\\");
+            string dllPath = assemblyFolderPath.Substring(0, lastBackslashIndex + 1) + "PluginInfoCollector\\PluginInfoCollector.dll";
+
+            Assembly assembly = Assembly.LoadFrom(dllPath);
+            Type type = assembly.GetType("PluginInfoCollector.InfoCollector");
+            var constructor = type.GetConstructor(new Type[] { typeof(string), typeof(string) });
+
+            if (type != null)
+            {
+                // Создание экземпляра класса
+                object instance = Activator.CreateInstance(type, new object[] { assemblyName, assemblyNameRus });
+            }
         }
         private static List<Room> GetRoomsFromCurrentSelection(Document doc, Selection sel)
         {
@@ -585,5 +623,6 @@ namespace FloorCreator
             floorCreatorProgressBarWPF.Show();
             System.Windows.Threading.Dispatcher.Run();
         }
+
     }
 }

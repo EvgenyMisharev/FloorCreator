@@ -12,59 +12,83 @@ namespace FloorCreator
         public string FloorCreationOptionSelectedName;
         public string InRoomsSelectedName;
         public FloorType SelectedFloorType;
-        public double FloorLevelOffset; 
+        public double FloorLevelOffset;
 
-        FloorCreatorSettings FloorCreatorSettingsParam = null;
+        FloorCreatorSettings FloorCreatorSettingsItem = null;
 
         public FloorCreatorWPF(List<FloorType> floorTypesList)
         {
+            FloorCreatorSettingsItem = FloorCreatorSettings.GetSettings();
             InitializeComponent();
-            rbt_ManualCreation.IsChecked = true;
-
             comboBox_FloorType.ItemsSource = floorTypesList;
             comboBox_FloorType.DisplayMemberPath = "Name";
 
-            FloorCreatorSettingsParam = FloorCreatorSettings.GetSettings();
-            if(FloorCreatorSettingsParam.FloorTapeName != null)
+            if (FloorCreatorSettingsItem != null)
             {
-                comboBox_FloorType.SelectedItem = floorTypesList
-                    .FirstOrDefault(ft => ft.Name == FloorCreatorSettingsParam.FloorTapeName);
+                if (FloorCreatorSettingsItem.FloorCreationOptionSelectedName == "rbt_ManualCreation")
+                {
+                    rbt_ManualCreation.IsChecked = true;
+                }
+                else
+                {
+                    rbt_CreateFromParameter.IsChecked = true;
+                }
+                groupBox_FloorCreationOption_Checked(null, null);
+
+                if (FloorCreatorSettingsItem.InRoomsSelectedName == "rbt_InSelected")
+                {
+                    rbt_InSelected.IsChecked = true;
+                }
+                else
+                {
+                    rbt_InWholeProject.IsChecked = true;
+                }
+
+                if (floorTypesList.FirstOrDefault(ct => ct.Name == FloorCreatorSettingsItem.FloorTypeName) != null)
+                {
+                    comboBox_FloorType.SelectedItem = floorTypesList.FirstOrDefault(ct => ct.Name == FloorCreatorSettingsItem.FloorTypeName);
+                }
+                else
+                {
+                    comboBox_FloorType.SelectedItem = comboBox_FloorType.Items[0];
+                }
+
+                textBox_FloorLevelOffset.Text = FloorCreatorSettingsItem.FloorLevelOffset;
+
             }
             else
             {
-                if (floorTypesList.Count != 0)
-                {
-                    comboBox_FloorType.SelectedItem = comboBox_FloorType.Items.GetItemAt(0);
-                }
-            }
-            if (FloorCreatorSettingsParam.FloorLevelOffset != null)
-            {
-                textBox_FloorLevelOffset.Text = FloorCreatorSettingsParam.FloorLevelOffset;
+                rbt_ManualCreation.IsChecked = true;
+                rbt_InSelected.IsChecked = true;
+                comboBox_FloorType.SelectedItem = comboBox_FloorType.Items[0];
+                groupBox_FloorCreationOption_Checked(null, null);
             }
         }
 
         //Изменение опции создания полов
-        private void groupBox_FloorCreationOptionCheckedRB(object sender, RoutedEventArgs e)
+        private void groupBox_FloorCreationOption_Checked(object sender, RoutedEventArgs e)
         {
-            string actionSelectionButtonName = (groupBox_FloorCreationOption.Content as System.Windows.Controls.Grid)
-                .Children.OfType<RadioButton>()
-                .FirstOrDefault(rb => rb.IsChecked.Value == true)
-                .Name;
-            if (actionSelectionButtonName == "rbt_ManualCreation")
+            if (rbt_CreateFromParameter != null)
             {
-                groupBox_InRooms.IsEnabled = false;
-                comboBox_FloorType.IsEnabled = true;
-            }
-            else if (actionSelectionButtonName == "rbt_CreateFromParameter")
-            {
-                comboBox_FloorType.IsEnabled = false;
-                groupBox_InRooms.IsEnabled = true;
+                string actionSelectionButtonName = (groupBox_FloorCreationOption.Content as StackPanel)
+                    .Children.OfType<RadioButton>()
+                    .FirstOrDefault(rb => rb.IsChecked.Value == true)
+                    .Name;
+                if (actionSelectionButtonName == "rbt_ManualCreation")
+                {
+                    groupBox_InRooms.IsEnabled = false;
+                    comboBox_FloorType.IsEnabled = true;
+                }
+                else if (actionSelectionButtonName == "rbt_CreateFromParameter")
+                {
+                    groupBox_InRooms.IsEnabled = true;
+                    comboBox_FloorType.IsEnabled = false;
+                }
             }
         }
 
         private void btn_Ok_Click(object sender, RoutedEventArgs e)
         {
-            GetFormSelectionResult();
             SaveSettings();
             DialogResult = true;
             Close();
@@ -79,7 +103,6 @@ namespace FloorCreator
         {
             if (e.Key == Key.Enter || e.Key == Key.Space)
             {
-                GetFormSelectionResult();
                 SaveSettings();
                 DialogResult = true;
                 Close();
@@ -92,25 +115,28 @@ namespace FloorCreator
             }
         }
 
-        private void GetFormSelectionResult()
+        private void SaveSettings()
         {
-            FloorCreationOptionSelectedName = (groupBox_FloorCreationOption.Content as System.Windows.Controls.Grid)
+            FloorCreatorSettingsItem = new FloorCreatorSettings();
+            FloorCreationOptionSelectedName = (groupBox_FloorCreationOption.Content as StackPanel)
                 .Children.OfType<RadioButton>()
                 .FirstOrDefault(rb => rb.IsChecked.Value == true)
                 .Name;
+            FloorCreatorSettingsItem.FloorCreationOptionSelectedName = FloorCreationOptionSelectedName;
+
             InRoomsSelectedName = (groupBox_InRooms.Content as System.Windows.Controls.Grid)
                 .Children.OfType<RadioButton>()
                 .FirstOrDefault(rb => rb.IsChecked.Value == true)
                 .Name;
-            SelectedFloorType = comboBox_FloorType.SelectedItem as FloorType;
-            double.TryParse(textBox_FloorLevelOffset.Text, out FloorLevelOffset);
-        }
+            FloorCreatorSettingsItem.InRoomsSelectedName = InRoomsSelectedName;
 
-        private void SaveSettings()
-        {
-            FloorCreatorSettingsParam.FloorTapeName = SelectedFloorType.Name;
-            FloorCreatorSettingsParam.FloorLevelOffset = textBox_FloorLevelOffset.Text;
-            FloorCreatorSettingsParam.SaveSettings();
+            SelectedFloorType = comboBox_FloorType.SelectedItem as FloorType;
+            FloorCreatorSettingsItem.FloorTypeName = SelectedFloorType.Name;
+
+            double.TryParse(textBox_FloorLevelOffset.Text, out FloorLevelOffset);
+            FloorCreatorSettingsItem.FloorLevelOffset = textBox_FloorLevelOffset.Text;
+
+            FloorCreatorSettingsItem.SaveSettings();
         }
     }
 }

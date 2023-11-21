@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
 <FloorCreatorSettings xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <FloorTapeName>АР_Тип1_Пол кермогранит_150</FloorTapeName>
-  <FloorLevelOffset>0</FloorLevelOffset>
+  <FloorCreationOptionSelectedName>rbt_ManualCreation</FloorCreationOptionSelectedName>
+  <InRoomsSelectedName>rbt_InWholeProject</InRoomsSelectedName>
+  <FloorTypeName>АР_Тип1_Пол кермогранит_150</FloorTypeName>
+  <FloorLevelOffset>100</FloorLevelOffset>
 </FloorCreatorSettings>
