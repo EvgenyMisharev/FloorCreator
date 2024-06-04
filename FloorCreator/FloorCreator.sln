@@ -12,7 +12,7 @@ Global
 		R2021|Any CPU = R2021|Any CPU
 		R2022|Any CPU = R2022|Any CPU
 		R2023|Any CPU = R2023|Any CPU
-		R2023|Any CPU = R2024|Any CPU
+		R2024|Any CPU = R2024|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{566C56CD-D3A0-43C6-BB37-A95DBAFCBE0A}.R2019|Any CPU.ActiveCfg = R2019|Any CPU

@@ -56,6 +56,7 @@ namespace FloorCreator
             FloorType selectedFloorType = floorCreatorWPF.SelectedFloorType;
             double floorLevelOffset = floorCreatorWPF.FloorLevelOffset / 304.8;
 
+            List<Room> errorRooms = new List<Room>();
 
             //Ручное создание полов
             if (floorCreationOptionSelectedName == "rbt_ManualCreation")
@@ -160,35 +161,54 @@ namespace FloorCreator
                                 floorSolid = SolidUtils.CreateTransformed(floorSolid, Transform.CreateTranslation(new XYZ(0, 0, 500 / 304.8)));
 
                                 //Поиск пересечения между полом и помещением
-                                Solid intersection = BooleanOperationsUtils.ExecuteBooleanOperation(floorSolid, roomSolid, BooleanOperationsType.Intersect);
-                                if (intersection != null)
+                                try
                                 {
-                                    double volumeOfIntersection = intersection.Volume;
-                                    if (volumeOfIntersection != 0)
+                                    Solid intersection = BooleanOperationsUtils.ExecuteBooleanOperation(floorSolid, roomSolid, BooleanOperationsType.Intersect);
+                                    if (intersection != null)
                                     {
-                                        doc.Delete(f.Id);
+                                        double volumeOfIntersection = intersection.Volume;
+                                        if (volumeOfIntersection != 0)
+                                        {
+                                            doc.Delete(f.Id);
+                                        }
                                     }
+                                }
+                                catch
+                                {
+                                    //Пропуск
                                 }
                             }
                             t.Commit();
 
                             //Создание нового пола
                             t.Start("Создание плиты");
-#if R2019 || R2020 || R2021 || R2022
-                            Floor floor = doc.Create.NewFloor(firstRoomCurves, selectedFloorType, roomLevel, false);
-                            floor.get_Parameter(BuiltInParameter.FLOOR_HEIGHTABOVELEVEL_PARAM).Set(floorLevelOffset);
-#else
-                            List<Curve> curvesListToCurveLoop = new List<Curve>();
-                            foreach (Curve c in firstRoomCurves)
+
+                            Floor floor = null;
+                            try
                             {
-                                curvesListToCurveLoop.Add(c);
-                            }
-                            CurveLoop cl = CurveLoop.Create(curvesListToCurveLoop);
-                            List<CurveLoop> curveLoopList = new List<CurveLoop>();
-                            curveLoopList.Add(cl);
-                            Floor floor = Floor.Create(doc, curveLoopList, selectedFloorType.Id, roomLevel.Id);
-                            floor.get_Parameter(BuiltInParameter.FLOOR_HEIGHTABOVELEVEL_PARAM).Set(floorLevelOffset);
+#if R2019 || R2020 || R2021 || R2022
+                                floor = doc.Create.NewFloor(firstRoomCurves, selectedFloorType, roomLevel, false);
+                                floor.get_Parameter(BuiltInParameter.FLOOR_HEIGHTABOVELEVEL_PARAM).Set(floorLevelOffset);
+#else
+                                List<Curve> curvesListToCurveLoop = new List<Curve>();
+                                foreach (Curve c in firstRoomCurves)
+                                {
+                                    curvesListToCurveLoop.Add(c);
+                                }
+                                CurveLoop cl = CurveLoop.Create(curvesListToCurveLoop);
+                                List<CurveLoop> curveLoopList = new List<CurveLoop>();
+                                curveLoopList.Add(cl);
+
+                                floor = Floor.Create(doc, curveLoopList, selectedFloorType.Id, roomLevel.Id);
+                                floor.get_Parameter(BuiltInParameter.FLOOR_HEIGHTABOVELEVEL_PARAM).Set(floorLevelOffset);
 #endif
+                            }
+                            catch
+                            {
+                                errorRooms.Add(room);
+                                t.Commit();
+                                continue;
+                            }
 
                             //Удаление предупреждения о редактировании группы вне редактора
                             FailureHandlingOptions failureHandlingOptions = t.GetFailureHandlingOptions();
@@ -212,8 +232,6 @@ namespace FloorCreator
                             t.Commit();
 
                             //Полы в дверные проемы
-
-
                         }
                         floorCreatorProgressBarWPF.Dispatcher.Invoke(() => floorCreatorProgressBarWPF.Close());
                         transGroup.Assimilate();
@@ -329,18 +347,25 @@ namespace FloorCreator
                                         floorSolid = SolidUtils.CreateTransformed(floorSolid, Transform.CreateTranslation(new XYZ(0, 0, 500 / 304.8)));
 
                                         //Поиск пересечения между полом и помещением
-                                        Solid intersection = BooleanOperationsUtils.ExecuteBooleanOperation(floorSolid, roomSolid, BooleanOperationsType.Intersect);
-                                        if (intersection != null)
+                                        try
                                         {
-                                            double volumeOfIntersection = intersection.Volume;
-                                            if (volumeOfIntersection != 0)
+                                            Solid intersection = BooleanOperationsUtils.ExecuteBooleanOperation(floorSolid, roomSolid, BooleanOperationsType.Intersect);
+                                            if (intersection != null)
                                             {
-                                                doc.Delete(f.Id);
+                                                double volumeOfIntersection = intersection.Volume;
+                                                if (volumeOfIntersection != 0)
+                                                {
+                                                    doc.Delete(f.Id);
+                                                }
                                             }
                                         }
+                                        catch
+                                        {
+                                            //Пропуск
+                                        }
+
                                     }
                                     t.Commit();
-
 
                                     t.Start("Создание плиты");
                                     Floor floor = null;
@@ -364,7 +389,7 @@ namespace FloorCreator
                                     }
                                     catch
                                     {
-                                        //skippedRoomsList.Add(room);
+                                        errorRooms.Add(room);
                                         t.Commit();
                                         continue;
                                     }
@@ -400,12 +425,6 @@ namespace FloorCreator
                             transGroup.Assimilate();
                         }
                     }
-                    //if (skippedRoomsList.Count != 0)
-                    //{
-                    //    skippedRoomsList = skippedRoomsList.OrderBy(r => r.Number).ToList();
-                    //    SkippedRoomsDialogWPF skippedRoomsDialogWPF = new SkippedRoomsDialogWPF(commandData, skippedRoomsList);
-                    //    skippedRoomsDialogWPF.ShowDialog();
-                    //}
                 }
                 else if (inRoomsSelectedName == "rbt_InWholeProject")
                 {
@@ -501,14 +520,21 @@ namespace FloorCreator
                                         floorSolid = SolidUtils.CreateTransformed(floorSolid, Transform.CreateTranslation(new XYZ(0, 0, 500 / 304.8)));
 
                                         //Поиск пересечения между полом и помещением
-                                        Solid intersection = BooleanOperationsUtils.ExecuteBooleanOperation(floorSolid, roomSolid, BooleanOperationsType.Intersect);
-                                        if (intersection != null)
+                                        try
                                         {
-                                            double volumeOfIntersection = intersection.Volume;
-                                            if (volumeOfIntersection != 0)
+                                            Solid intersection = BooleanOperationsUtils.ExecuteBooleanOperation(floorSolid, roomSolid, BooleanOperationsType.Intersect);
+                                            if (intersection != null)
                                             {
-                                                doc.Delete(f.Id);
+                                                double volumeOfIntersection = intersection.Volume;
+                                                if (volumeOfIntersection != 0)
+                                                {
+                                                    doc.Delete(f.Id);
+                                                }
                                             }
+                                        }
+                                        catch
+                                        {
+                                            //Пропуск
                                         }
                                     }
                                     t.Commit();
@@ -536,7 +562,7 @@ namespace FloorCreator
                                     }
                                     catch
                                     {
-                                        //skippedRoomsList.Add(room);
+                                        errorRooms.Add(room);
                                         t.Commit();
                                         continue;
                                     }
@@ -570,13 +596,13 @@ namespace FloorCreator
                             transGroup.Assimilate();
                         }
                     }
-                    //if(skippedRoomsList.Count != 0)
-                    //{
-                    //    skippedRoomsList = skippedRoomsList.OrderBy(r => r.Number).ToList();
-                    //    SkippedRoomsDialogWPF skippedRoomsDialogWPF = new SkippedRoomsDialogWPF(commandData, skippedRoomsList);
-                    //    skippedRoomsDialogWPF.ShowDialog();
-                    //}
                 }
+            }
+            if (errorRooms.Count > 0)
+            {
+                // Создаем и показываем окно с ошибками
+                ErrorRoomsDialogWPF errorDialog = new ErrorRoomsDialogWPF(errorRooms);
+                errorDialog.ShowDialog();
             }
 
             return Result.Succeeded;
