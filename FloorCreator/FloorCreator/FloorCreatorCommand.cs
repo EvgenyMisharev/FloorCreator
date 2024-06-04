@@ -321,7 +321,8 @@ namespace FloorCreator
                                     .ToList();
 
                                 FloorType typeFromParameter = floorTypesList
-                                    .FirstOrDefault(ft => ft.get_Parameter(BuiltInParameter.WINDOW_TYPE_ID).AsString() == room.get_Parameter(BuiltInParameter.ROOM_FINISH_FLOOR).AsString());
+                                    .FirstOrDefault(ft => !string.IsNullOrEmpty(ft.get_Parameter(BuiltInParameter.WINDOW_TYPE_ID).AsString()) &&
+                                    ft.get_Parameter(BuiltInParameter.WINDOW_TYPE_ID).AsString() == room.get_Parameter(BuiltInParameter.ROOM_FINISH_FLOOR).AsString());
                                 if (typeFromParameter != null)
                                 {
                                     t.Start("Удаление старого пола");
@@ -494,7 +495,8 @@ namespace FloorCreator
                                     .OrderBy(f => f.Name)
                                     .ToList();
                                 FloorType typeFromParameter = floorTypesList
-                                    .FirstOrDefault(ft => ft.get_Parameter(BuiltInParameter.WINDOW_TYPE_ID).AsString() == room.get_Parameter(BuiltInParameter.ROOM_FINISH_FLOOR).AsString());
+                                    .FirstOrDefault(ft => !string.IsNullOrEmpty(ft.get_Parameter(BuiltInParameter.WINDOW_TYPE_ID).AsString()) &&
+                                    ft.get_Parameter(BuiltInParameter.WINDOW_TYPE_ID).AsString() == room.get_Parameter(BuiltInParameter.ROOM_FINISH_FLOOR).AsString());
                                 if (typeFromParameter != null)
                                 {
                                     t.Start("Удаление старого пола");
