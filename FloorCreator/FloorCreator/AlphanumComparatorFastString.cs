@@ -72,8 +72,8 @@ namespace FloorCreator
 
                 if (char.IsDigit(space1[0]) && char.IsDigit(space2[0]))
                 {
-                    int thisNumericChunk = int.Parse(str1);
-                    int thatNumericChunk = int.Parse(str2);
+                    long thisNumericChunk = long.Parse(str1);
+                    long thatNumericChunk = long.Parse(str2);
                     result = thisNumericChunk.CompareTo(thatNumericChunk);
                 }
                 else

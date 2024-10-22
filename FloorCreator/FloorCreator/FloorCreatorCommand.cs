@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace FloorCreator
 {
@@ -19,9 +20,10 @@ namespace FloorCreator
         {
             try
             {
-                GetPluginStartInfo();
+                _ = GetPluginStartInfo();
             }
             catch { }
+
 
             Document doc = commandData.Application.ActiveUIDocument.Document;
             Selection sel = commandData.Application.ActiveUIDocument.Selection;
@@ -609,27 +611,6 @@ namespace FloorCreator
 
             return Result.Succeeded;
         }
-        private static void GetPluginStartInfo()
-        {
-            // Получаем сборку, в которой выполняется текущий код
-            Assembly thisAssembly = Assembly.GetExecutingAssembly();
-            string assemblyName = "FloorCreator";
-            string assemblyNameRus = "Полы";
-            string assemblyFolderPath = Path.GetDirectoryName(thisAssembly.Location);
-
-            int lastBackslashIndex = assemblyFolderPath.LastIndexOf("\\");
-            string dllPath = assemblyFolderPath.Substring(0, lastBackslashIndex + 1) + "PluginInfoCollector\\PluginInfoCollector.dll";
-
-            Assembly assembly = Assembly.LoadFrom(dllPath);
-            Type type = assembly.GetType("PluginInfoCollector.InfoCollector");
-            var constructor = type.GetConstructor(new Type[] { typeof(string), typeof(string) });
-
-            if (type != null)
-            {
-                // Создание экземпляра класса
-                object instance = Activator.CreateInstance(type, new object[] { assemblyName, assemblyNameRus });
-            }
-        }
         private static List<Room> GetRoomsFromCurrentSelection(Document doc, Selection sel)
         {
             ICollection<ElementId> selectedIds = sel.GetElementIds();
@@ -651,6 +632,35 @@ namespace FloorCreator
             floorCreatorProgressBarWPF.Show();
             System.Windows.Threading.Dispatcher.Run();
         }
+        private static async Task GetPluginStartInfo()
+        {
+            // Получаем сборку, в которой выполняется текущий код
+            Assembly thisAssembly = Assembly.GetExecutingAssembly();
+            string assemblyName = "FloorCreator";
+            string assemblyNameRus = "Полы";
+            string assemblyFolderPath = Path.GetDirectoryName(thisAssembly.Location);
 
+            int lastBackslashIndex = assemblyFolderPath.LastIndexOf("\\");
+            string dllPath = assemblyFolderPath.Substring(0, lastBackslashIndex + 1) + "PluginInfoCollector\\PluginInfoCollector.dll";
+
+            Assembly assembly = Assembly.LoadFrom(dllPath);
+            Type type = assembly.GetType("PluginInfoCollector.InfoCollector");
+
+            if (type != null)
+            {
+                // Создание экземпляра класса
+                object instance = Activator.CreateInstance(type);
+
+                // Получение метода CollectPluginUsageAsync
+                var method = type.GetMethod("CollectPluginUsageAsync");
+
+                if (method != null)
+                {
+                    // Вызов асинхронного метода через reflection
+                    Task task = (Task)method.Invoke(instance, new object[] { assemblyName, assemblyNameRus });
+                    await task;  // Ожидание завершения асинхронного метода
+                }
+            }
+        }
     }
 }
