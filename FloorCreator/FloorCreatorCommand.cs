@@ -87,6 +87,7 @@ namespace FloorCreator
             double floorLevelOffset = floorCreatorWPF.FloorLevelOffset / 304.8;
 
             bool needFillDoorPatches = floorCreatorWPF.FillDoorPatches;
+            bool deleteOldFloors = floorCreatorWPF.DeleteOldFloors;
 
             List<Room> errorRooms = new List<Room>();
 
@@ -176,6 +177,8 @@ namespace FloorCreator
                                 }
                             }
 
+                            if (deleteOldFloors)
+                            {
 #if R2019 || R2020 || R2021 || R2022 || R2023 || R2024 || R2025
 
                             List<Floor> floorList = new FilteredElementCollector(doc)
@@ -218,47 +221,48 @@ namespace FloorCreator
 
 #endif
 
-                            t.Start("Удаление старого пола");
-                            //Солид помещения
-                            Solid roomSolid = null;
-                            GeometryElement geomRoomElement = room.get_Geometry(new Options());
-                            foreach (GeometryObject geomObj in geomRoomElement)
-                            {
-                                roomSolid = geomObj as Solid;
-                                if (roomSolid != null) break;
-                            }
-                            foreach (Floor f in floorList)
-                            {
-                                //Солид пола
-                                Solid floorSolid = null;
-                                GeometryElement geomFloorElement = f.get_Geometry(new Options());
-                                foreach (GeometryObject geomObj in geomFloorElement)
+                                t.Start("Удаление старого пола");
+                                //Солид помещения
+                                Solid roomSolid = null;
+                                GeometryElement geomRoomElement = room.get_Geometry(new Options());
+                                foreach (GeometryObject geomObj in geomRoomElement)
                                 {
-                                    floorSolid = geomObj as Solid;
-                                    if (floorSolid != null) break;
+                                    roomSolid = geomObj as Solid;
+                                    if (roomSolid != null) break;
                                 }
-                                //Подъем пола на 500
-                                floorSolid = SolidUtils.CreateTransformed(floorSolid, Transform.CreateTranslation(new XYZ(0, 0, 500 / 304.8)));
-
-                                //Поиск пересечения между полом и помещением
-                                try
+                                foreach (Floor f in floorList)
                                 {
-                                    Solid intersection = BooleanOperationsUtils.ExecuteBooleanOperation(floorSolid, roomSolid, BooleanOperationsType.Intersect);
-                                    if (intersection != null)
+                                    //Солид пола
+                                    Solid floorSolid = null;
+                                    GeometryElement geomFloorElement = f.get_Geometry(new Options());
+                                    foreach (GeometryObject geomObj in geomFloorElement)
                                     {
-                                        double volumeOfIntersection = intersection.Volume;
-                                        if (volumeOfIntersection != 0)
+                                        floorSolid = geomObj as Solid;
+                                        if (floorSolid != null) break;
+                                    }
+                                    //Подъем пола на 500
+                                    floorSolid = SolidUtils.CreateTransformed(floorSolid, Transform.CreateTranslation(new XYZ(0, 0, 500 / 304.8)));
+
+                                    //Поиск пересечения между полом и помещением
+                                    try
+                                    {
+                                        Solid intersection = BooleanOperationsUtils.ExecuteBooleanOperation(floorSolid, roomSolid, BooleanOperationsType.Intersect);
+                                        if (intersection != null)
                                         {
-                                            doc.Delete(f.Id);
+                                            double volumeOfIntersection = intersection.Volume;
+                                            if (volumeOfIntersection != 0)
+                                            {
+                                                doc.Delete(f.Id);
+                                            }
                                         }
                                     }
+                                    catch
+                                    {
+                                        //Пропуск
+                                    }
                                 }
-                                catch
-                                {
-                                    //Пропуск
-                                }
+                                t.Commit();
                             }
-                            t.Commit();
 
                             if (!TryPrepareFloorProfile(firstRoomCurves, shortCurveTolerance, curveCreationTolerance, out List<Curve> preparedProfileCurves))
                             {
@@ -405,96 +409,99 @@ namespace FloorCreator
                                     }
                                 }
 
-                                // Удаление старого пола
-#if R2019 || R2020 || R2021 || R2022 || R2023 || R2024 || R2025
-
-                            List<Floor> floorList = new FilteredElementCollector(doc)
-                                .OfClass(typeof(Floor))
-                                .Cast<Floor>()
-                                .Where(f => f.LevelId == room.LevelId)
-                                .Where(f => f.Category != null && f.Category.Id.IntegerValue == (int)BuiltInCategory.OST_Floors)
-                                .Where(f =>
-                                {
-                                    var ft = f.FloorType;
-                                    if (ft == null) return false;
-
-                                    var p = ft.get_Parameter(BuiltInParameter.ALL_MODEL_MODEL);
-                                    var s = p != null ? p.AsString() : null;
-
-                                    return s == "Пол" || s == "Полы";
-                                })
-                                .OrderBy(f => f.Name)
-                                .ToList();
-
-#else
-
-                                List<Floor> floorList = new FilteredElementCollector(doc)
-                                    .OfClass(typeof(Floor))
-                                    .OfCategory(BuiltInCategory.OST_Floors)
-                                    .Cast<Floor>()
-                                    .Where(f => f.LevelId == room.LevelId)
-                                    .Where(f =>
-                                    {
-                                        var ft = f.FloorType;
-                                        if (ft == null) return false;
-
-                                        var p = ft.get_Parameter(BuiltInParameter.ALL_MODEL_MODEL);
-                                        var s = p != null ? p.AsString() : null;
-
-                                        return s == "Пол" || s == "Полы";
-                                    })
-                                    .OrderBy(f => f.Name)
-                                    .ToList();
-
-#endif
-
                                 FloorType typeFromParameter = floorTypesList
                                     .FirstOrDefault(ft => !string.IsNullOrEmpty(ft.get_Parameter(BuiltInParameter.WINDOW_TYPE_ID).AsString()) &&
                                     ft.get_Parameter(BuiltInParameter.WINDOW_TYPE_ID).AsString() == room.get_Parameter(BuiltInParameter.ROOM_FINISH_FLOOR).AsString());
                                 if (typeFromParameter != null)
                                 {
-                                    t.Start("Удаление старого пола");
-                                    //Солид помещения
-                                    Solid roomSolid = null;
-                                    GeometryElement geomRoomElement = room.get_Geometry(new Options());
-                                    foreach (GeometryObject geomObj in geomRoomElement)
+                                    if (deleteOldFloors)
                                     {
-                                        roomSolid = geomObj as Solid;
-                                        if (roomSolid != null) break;
-                                    }
-                                    foreach (Floor f in floorList)
-                                    {
-                                        //Солид пола
-                                        Solid floorSolid = null;
-                                        GeometryElement geomFloorElement = f.get_Geometry(new Options());
-                                        foreach (GeometryObject geomObj in geomFloorElement)
-                                        {
-                                            floorSolid = geomObj as Solid;
-                                            if (floorSolid != null) break;
-                                        }
-                                        //Подъем пола на 500
-                                        floorSolid = SolidUtils.CreateTransformed(floorSolid, Transform.CreateTranslation(new XYZ(0, 0, 500 / 304.8)));
+                                        // Удаление старого пола
+#if R2019 || R2020 || R2021 || R2022 || R2023 || R2024 || R2025
 
-                                        //Поиск пересечения между полом и помещением
-                                        try
-                                        {
-                                            Solid intersection = BooleanOperationsUtils.ExecuteBooleanOperation(floorSolid, roomSolid, BooleanOperationsType.Intersect);
-                                            if (intersection != null)
+                                        List<Floor> floorList = new FilteredElementCollector(doc)
+                                            .OfClass(typeof(Floor))
+                                            .Cast<Floor>()
+                                            .Where(f => f.LevelId == room.LevelId)
+                                            .Where(f => f.Category != null && f.Category.Id.IntegerValue == (int)BuiltInCategory.OST_Floors)
+                                            .Where(f =>
                                             {
-                                                double volumeOfIntersection = intersection.Volume;
-                                                if (volumeOfIntersection != 0)
+                                                var ft = f.FloorType;
+                                                if (ft == null) return false;
+
+                                                var p = ft.get_Parameter(BuiltInParameter.ALL_MODEL_MODEL);
+                                                var s = p != null ? p.AsString() : null;
+
+                                                return s == "Пол" || s == "Полы";
+                                            })
+                                            .OrderBy(f => f.Name)
+                                            .ToList();
+
+#else
+
+                                        List<Floor> floorList = new FilteredElementCollector(doc)
+                                            .OfClass(typeof(Floor))
+                                            .OfCategory(BuiltInCategory.OST_Floors)
+                                            .Cast<Floor>()
+                                            .Where(f => f.LevelId == room.LevelId)
+                                            .Where(f =>
+                                            {
+                                                var ft = f.FloorType;
+                                                if (ft == null) return false;
+
+                                                var p = ft.get_Parameter(BuiltInParameter.ALL_MODEL_MODEL);
+                                                var s = p != null ? p.AsString() : null;
+
+                                                return s == "Пол" || s == "Полы";
+                                            })
+                                            .OrderBy(f => f.Name)
+                                            .ToList();
+
+#endif
+
+                                        t.Start("Удаление старого пола");
+                                        //Солид помещения
+                                        Solid roomSolid = null;
+                                        GeometryElement geomRoomElement = room.get_Geometry(new Options());
+                                        foreach (GeometryObject geomObj in geomRoomElement)
+                                        {
+                                            roomSolid = geomObj as Solid;
+                                            if (roomSolid != null) break;
+                                        }
+                                        foreach (Floor f in floorList)
+                                        {
+                                            //Солид пола
+                                            Solid floorSolid = null;
+                                            GeometryElement geomFloorElement = f.get_Geometry(new Options());
+                                            foreach (GeometryObject geomObj in geomFloorElement)
+                                            {
+                                                floorSolid = geomObj as Solid;
+                                                if (floorSolid != null) break;
+                                            }
+                                            //Подъем пола на 500
+                                            floorSolid = SolidUtils.CreateTransformed(floorSolid, Transform.CreateTranslation(new XYZ(0, 0, 500 / 304.8)));
+
+                                            //Поиск пересечения между полом и помещением
+                                            try
+                                            {
+                                                Solid intersection = BooleanOperationsUtils.ExecuteBooleanOperation(floorSolid, roomSolid, BooleanOperationsType.Intersect);
+                                                if (intersection != null)
                                                 {
-                                                    doc.Delete(f.Id);
+                                                    double volumeOfIntersection = intersection.Volume;
+                                                    if (volumeOfIntersection != 0)
+                                                    {
+                                                        doc.Delete(f.Id);
+                                                    }
                                                 }
                                             }
-                                        }
-                                        catch
-                                        {
-                                            //Пропуск
-                                        }
+                                            catch
+                                            {
+                                                //Пропуск
+                                            }
 
+                                        }
+                                        t.Commit();
                                     }
-                                    t.Commit();
 
                                     if (!TryPrepareFloorProfile(firstRoomCurves, shortCurveTolerance, curveCreationTolerance, out List<Curve> preparedProfileCurves))
                                     {
@@ -631,95 +638,98 @@ namespace FloorCreator
                                     }
                                 }
 
-                                //Удаление старого пола
-#if R2019 || R2020 || R2021 || R2022 || R2023 || R2024 || R2025
-
-                            List<Floor> floorList = new FilteredElementCollector(doc)
-                                .OfClass(typeof(Floor))
-                                .Cast<Floor>()
-                                .Where(f => f.LevelId == room.LevelId)
-                                .Where(f => f.Category != null && f.Category.Id.IntegerValue == (int)BuiltInCategory.OST_Floors)
-                                .Where(f =>
-                                {
-                                    var ft = f.FloorType;
-                                    if (ft == null) return false;
-
-                                    var p = ft.get_Parameter(BuiltInParameter.ALL_MODEL_MODEL);
-                                    var s = p != null ? p.AsString() : null;
-
-                                    return s == "Пол" || s == "Полы";
-                                })
-                                .OrderBy(f => f.Name)
-                                .ToList();
-
-#else
-
-                                List<Floor> floorList = new FilteredElementCollector(doc)
-                                    .OfCategory(BuiltInCategory.OST_Floors)
-                                    .WhereElementIsNotElementType()
-                                    .Cast<Floor>()
-                                    .Where(f => f.LevelId == room.LevelId)
-                                    .Where(f =>
-                                    {
-                                        var ft = f.FloorType;
-                                        if (ft == null) return false;
-
-                                        var p = ft.get_Parameter(BuiltInParameter.ALL_MODEL_MODEL);
-                                        var s = p != null ? p.AsString() : null;
-
-                                        return s == "Пол" || s == "Полы";
-                                    })
-                                    .OrderBy(f => f.Name)
-                                    .ToList();
-
-#endif
-
                                 FloorType typeFromParameter = floorTypesList
                                     .FirstOrDefault(ft => !string.IsNullOrEmpty(ft.get_Parameter(BuiltInParameter.WINDOW_TYPE_ID).AsString()) &&
                                     ft.get_Parameter(BuiltInParameter.WINDOW_TYPE_ID).AsString() == room.get_Parameter(BuiltInParameter.ROOM_FINISH_FLOOR).AsString());
                                 if (typeFromParameter != null)
                                 {
-                                    t.Start("Удаление старого пола");
-                                    //Солид помещения
-                                    Solid roomSolid = null;
-                                    GeometryElement geomRoomElement = room.get_Geometry(new Options());
-                                    foreach (GeometryObject geomObj in geomRoomElement)
+                                    if (deleteOldFloors)
                                     {
-                                        roomSolid = geomObj as Solid;
-                                        if (roomSolid != null) break;
-                                    }
-                                    foreach (Floor f in floorList)
-                                    {
-                                        //Солид пола
-                                        Solid floorSolid = null;
-                                        GeometryElement geomFloorElement = f.get_Geometry(new Options());
-                                        foreach (GeometryObject geomObj in geomFloorElement)
-                                        {
-                                            floorSolid = geomObj as Solid;
-                                            if (floorSolid != null) break;
-                                        }
-                                        //Подъем пола на 500
-                                        floorSolid = SolidUtils.CreateTransformed(floorSolid, Transform.CreateTranslation(new XYZ(0, 0, 500 / 304.8)));
+                                        //Удаление старого пола
+#if R2019 || R2020 || R2021 || R2022 || R2023 || R2024 || R2025
 
-                                        //Поиск пересечения между полом и помещением
-                                        try
-                                        {
-                                            Solid intersection = BooleanOperationsUtils.ExecuteBooleanOperation(floorSolid, roomSolid, BooleanOperationsType.Intersect);
-                                            if (intersection != null)
+                                        List<Floor> floorList = new FilteredElementCollector(doc)
+                                            .OfClass(typeof(Floor))
+                                            .Cast<Floor>()
+                                            .Where(f => f.LevelId == room.LevelId)
+                                            .Where(f => f.Category != null && f.Category.Id.IntegerValue == (int)BuiltInCategory.OST_Floors)
+                                            .Where(f =>
                                             {
-                                                double volumeOfIntersection = intersection.Volume;
-                                                if (volumeOfIntersection != 0)
+                                                var ft = f.FloorType;
+                                                if (ft == null) return false;
+
+                                                var p = ft.get_Parameter(BuiltInParameter.ALL_MODEL_MODEL);
+                                                var s = p != null ? p.AsString() : null;
+
+                                                return s == "Пол" || s == "Полы";
+                                            })
+                                            .OrderBy(f => f.Name)
+                                            .ToList();
+
+#else
+
+                                        List<Floor> floorList = new FilteredElementCollector(doc)
+                                            .OfCategory(BuiltInCategory.OST_Floors)
+                                            .WhereElementIsNotElementType()
+                                            .Cast<Floor>()
+                                            .Where(f => f.LevelId == room.LevelId)
+                                            .Where(f =>
+                                            {
+                                                var ft = f.FloorType;
+                                                if (ft == null) return false;
+
+                                                var p = ft.get_Parameter(BuiltInParameter.ALL_MODEL_MODEL);
+                                                var s = p != null ? p.AsString() : null;
+
+                                                return s == "Пол" || s == "Полы";
+                                            })
+                                            .OrderBy(f => f.Name)
+                                            .ToList();
+
+#endif
+
+                                        t.Start("Удаление старого пола");
+                                        //Солид помещения
+                                        Solid roomSolid = null;
+                                        GeometryElement geomRoomElement = room.get_Geometry(new Options());
+                                        foreach (GeometryObject geomObj in geomRoomElement)
+                                        {
+                                            roomSolid = geomObj as Solid;
+                                            if (roomSolid != null) break;
+                                        }
+                                        foreach (Floor f in floorList)
+                                        {
+                                            //Солид пола
+                                            Solid floorSolid = null;
+                                            GeometryElement geomFloorElement = f.get_Geometry(new Options());
+                                            foreach (GeometryObject geomObj in geomFloorElement)
+                                            {
+                                                floorSolid = geomObj as Solid;
+                                                if (floorSolid != null) break;
+                                            }
+                                            //Подъем пола на 500
+                                            floorSolid = SolidUtils.CreateTransformed(floorSolid, Transform.CreateTranslation(new XYZ(0, 0, 500 / 304.8)));
+
+                                            //Поиск пересечения между полом и помещением
+                                            try
+                                            {
+                                                Solid intersection = BooleanOperationsUtils.ExecuteBooleanOperation(floorSolid, roomSolid, BooleanOperationsType.Intersect);
+                                                if (intersection != null)
                                                 {
-                                                    doc.Delete(f.Id);
+                                                    double volumeOfIntersection = intersection.Volume;
+                                                    if (volumeOfIntersection != 0)
+                                                    {
+                                                        doc.Delete(f.Id);
+                                                    }
                                                 }
                                             }
+                                            catch
+                                            {
+                                                //Пропуск
+                                            }
                                         }
-                                        catch
-                                        {
-                                            //Пропуск
-                                        }
+                                        t.Commit();
                                     }
-                                    t.Commit();
 
 
                                     if (!TryPrepareFloorProfile(firstRoomCurves, shortCurveTolerance, curveCreationTolerance, out List<Curve> preparedProfileCurves))

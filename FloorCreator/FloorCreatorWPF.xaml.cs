@@ -16,6 +16,7 @@ namespace FloorCreator
         public double FloorLevelOffset;
 
         public bool FillDoorPatches => chk_FillDoorPatches.IsChecked == true;
+        public bool DeleteOldFloors => chk_DeleteOldFloors.IsChecked == true;
 
         FloorCreatorSettings FloorCreatorSettingsItem = null;
 
@@ -37,6 +38,7 @@ namespace FloorCreator
 
             textBox_FloorLevelOffset.Text = "0";
             chk_FillDoorPatches.IsChecked = false;
+            chk_DeleteOldFloors.IsChecked = true;
 
             if (FloorCreatorSettingsItem != null)
             {
@@ -64,6 +66,7 @@ namespace FloorCreator
                     textBox_FloorLevelOffset.Text = "0";
 
                 chk_FillDoorPatches.IsChecked = FloorCreatorSettingsItem.FillDoorPatches;
+                chk_DeleteOldFloors.IsChecked = FloorCreatorSettingsItem.DeleteOldFloors;
             }
 
             // Обновляем доступность контролов после выставления радио
@@ -158,6 +161,7 @@ namespace FloorCreator
 
             // Чекбокс
             FloorCreatorSettingsItem.FillDoorPatches = chk_FillDoorPatches != null && chk_FillDoorPatches.IsChecked == true;
+            FloorCreatorSettingsItem.DeleteOldFloors = chk_DeleteOldFloors != null && chk_DeleteOldFloors.IsChecked == true;
 
             FloorCreatorSettingsItem.SaveSettings();
         }

@@ -10,7 +10,6 @@ namespace FloorCreator
         public string FloorTypeName { get; set; }
         public string FloorLevelOffset { get; set; }
         public bool FillDoorPatches { get; set; } = false;
-        public bool DeleteOldFloors { get; set; } = true;
 
         public static FloorCreatorSettings GetSettings()
         {

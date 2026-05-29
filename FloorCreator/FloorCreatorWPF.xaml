@@ -106,12 +106,18 @@
                     <ColumnDefinition Width="300*"/>
                 </Grid.ColumnDefinitions>
 
-                <CheckBox x:Name="chk_FillDoorPatches"
-                          Content="Заводить пол в дверные проемы"
-                          Grid.Column="0"
-                          VerticalAlignment="Center"
-                          IsChecked="False"
-                          Margin="10,0,0,0"/>
+                <StackPanel Grid.Column="0"
+                            VerticalAlignment="Center">
+                    <CheckBox x:Name="chk_FillDoorPatches"
+                              Content="Заводить пол в дверные проемы"
+                              IsChecked="False"
+                              Margin="10,0,0,0"/>
+
+                    <CheckBox x:Name="chk_DeleteOldFloors"
+                              Content="Удалять старые"
+                              IsChecked="True"
+                              Margin="10,5,0,0"/>
+                </StackPanel>
 
                 <Label x:Name="label_FloorLevelOffset"
                        Content="Смещение от уровня:"
