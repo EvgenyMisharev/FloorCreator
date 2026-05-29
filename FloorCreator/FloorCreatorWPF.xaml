@@ -6,8 +6,8 @@
         xmlns:local="clr-namespace:FloorCreator"
         mc:Ignorable="d"
         Title="Полы"
-        Height="400" Width="600"
-        MinHeight="400" MinWidth="600" MaxHeight="400"
+        Height="400" Width="680"
+        MinHeight="400" MinWidth="650" MaxHeight="400"
         WindowStyle="SingleBorderWindow"
         ResizeMode="NoResize"
         Icon="Resources/citrus.ico"
@@ -102,11 +102,12 @@
             <!-- Параметры (как было снизу) -->
             <Grid Grid.Row="0" Margin="0,0,0,10">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="300*"/>
+                    <ColumnDefinition Width="400*"/>
                     <ColumnDefinition Width="300*"/>
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0"
+                            Orientation="Horizontal"
                             VerticalAlignment="Center">
                     <CheckBox x:Name="chk_FillDoorPatches"
                               Content="Заводить пол в дверные проемы"
@@ -116,7 +117,7 @@
                     <CheckBox x:Name="chk_DeleteOldFloors"
                               Content="Удалять старые"
                               IsChecked="True"
-                              Margin="10,5,0,0"/>
+                              Margin="24,0,0,0"/>
                 </StackPanel>
 
                 <Label x:Name="label_FloorLevelOffset"

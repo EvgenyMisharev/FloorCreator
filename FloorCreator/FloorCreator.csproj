@@ -3,6 +3,7 @@
     <AssemblyName>FloorCreator</AssemblyName>
 	<RootNamespace>FloorCreator</RootNamespace>
 	<BaseOutputPath></BaseOutputPath>
+	<DefaultItemExcludes>$(DefaultItemExcludes);FloorCreator\**;FloorCreator25\**</DefaultItemExcludes>
   </PropertyGroup>
 	<ItemGroup>
 		<Resource Include="Resources\citrus.ico" />
