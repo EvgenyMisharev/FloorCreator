@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "FloorCreator25": {
-      "commandName": "Executable",
-      "executablePath": "C:\\Program Files\\Autodesk\\Revit 2025\\Revit.exe"
-    }
-  }
-}
