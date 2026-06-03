@@ -27,8 +27,9 @@ namespace FloorCreator
             catch { }
 
 
-            Document doc = commandData.Application.ActiveUIDocument.Document;
-            Selection sel = commandData.Application.ActiveUIDocument.Selection;
+            UIDocument uidoc = commandData.Application.ActiveUIDocument;
+            Document doc = uidoc.Document;
+            Selection sel = uidoc.Selection;
             double shortCurveTolerance = commandData.Application.Application.ShortCurveTolerance;
             double curveCreationTolerance = shortCurveTolerance * 1.05;
 
@@ -73,8 +74,11 @@ namespace FloorCreator
                 return Result.Cancelled;
             }
 
+            var phaseFilterItems = GetPhaseFilterSelectionItems(doc);
+            var defaultPhaseFilterId = GetDefaultPhaseFilterId(uidoc.ActiveView);
+
             //Вызов формы
-            FloorCreatorWPF floorCreatorWPF = new FloorCreatorWPF(floorTypesList);
+            FloorCreatorWPF floorCreatorWPF = new FloorCreatorWPF(floorTypesList, phaseFilterItems, defaultPhaseFilterId);
             floorCreatorWPF.ShowDialog();
             if (floorCreatorWPF.DialogResult != true)
             {
@@ -87,6 +91,8 @@ namespace FloorCreator
             double floorLevelOffset = floorCreatorWPF.FloorLevelOffset / 304.8;
 
             bool needFillDoorPatches = floorCreatorWPF.FillDoorPatches;
+            bool filterDoorsByPhase = floorCreatorWPF.FilterDoorsByPhase;
+            PhaseFilter selectedDoorPhaseFilter = GetSelectedPhaseFilter(doc, floorCreatorWPF.SelectedDoorPhaseFilterId, filterDoorsByPhase);
             bool deleteOldFloors = floorCreatorWPF.DeleteOldFloors;
 
             List<Room> errorRooms = new List<Room>();
@@ -152,7 +158,7 @@ namespace FloorCreator
 
                             if (needFillDoorPatches)
                             {
-                                firstRoomCurves = ApplyDoorPatchesToRoomCurves(doc, room, loops, firstRoomCurves, shortCurveTolerance, curveCreationTolerance);
+                                firstRoomCurves = ApplyDoorPatchesToRoomCurves(doc, room, loops, firstRoomCurves, shortCurveTolerance, curveCreationTolerance, selectedDoorPhaseFilter, filterDoorsByPhase);
                                 if (firstRoomCurves.Size < 3)
                                 {
                                     errorRooms.Add(room);
@@ -386,7 +392,7 @@ namespace FloorCreator
                                 }
                                 if (needFillDoorPatches)
                                 {
-                                    firstRoomCurves = ApplyDoorPatchesToRoomCurves(doc, room, loops, firstRoomCurves, shortCurveTolerance, curveCreationTolerance);
+                                    firstRoomCurves = ApplyDoorPatchesToRoomCurves(doc, room, loops, firstRoomCurves, shortCurveTolerance, curveCreationTolerance, selectedDoorPhaseFilter, filterDoorsByPhase);
                                     if (firstRoomCurves.Size < 3)
                                     {
                                         errorRooms.Add(room);
@@ -614,7 +620,7 @@ namespace FloorCreator
                                 }
                                 if (needFillDoorPatches)
                                 {
-                                    firstRoomCurves = ApplyDoorPatchesToRoomCurves(doc, room, loops, firstRoomCurves, shortCurveTolerance, curveCreationTolerance);
+                                    firstRoomCurves = ApplyDoorPatchesToRoomCurves(doc, room, loops, firstRoomCurves, shortCurveTolerance, curveCreationTolerance, selectedDoorPhaseFilter, filterDoorsByPhase);
                                     if (firstRoomCurves.Size < 3)
                                     {
                                         errorRooms.Add(room);
@@ -843,13 +849,128 @@ namespace FloorCreator
             floorCreatorProgressBarWPF.Show();
             System.Windows.Threading.Dispatcher.Run();
         }
+
+        private List<PhaseFilterSelectionItem> GetPhaseFilterSelectionItems(Document doc)
+        {
+            var phaseFilterItems = new List<PhaseFilterSelectionItem>
+            {
+                new PhaseFilterSelectionItem(ElementId.InvalidElementId, "Нет")
+            };
+
+            phaseFilterItems.AddRange(new FilteredElementCollector(doc)
+                .OfClass(typeof(PhaseFilter))
+                .WhereElementIsNotElementType()
+                .OfType<PhaseFilter>()
+                .OrderBy(phaseFilter => phaseFilter.Name)
+                .Select(phaseFilter => new PhaseFilterSelectionItem(phaseFilter.Id, phaseFilter.Name)));
+
+            return phaseFilterItems;
+        }
+
+        private ElementId GetDefaultPhaseFilterId(View activeView)
+        {
+            var viewPhaseFilterId = activeView?.get_Parameter(BuiltInParameter.VIEW_PHASE_FILTER)?.AsElementId();
+            return ElementIdCompat.IsValid(viewPhaseFilterId) ? viewPhaseFilterId : ElementId.InvalidElementId;
+        }
+
+        private PhaseFilter GetSelectedPhaseFilter(Document doc, ElementId selectedPhaseFilterId, bool filterDoorsByPhase)
+        {
+            if (!filterDoorsByPhase || !ElementIdCompat.IsValid(selectedPhaseFilterId))
+            {
+                return null;
+            }
+
+            return doc.GetElement(selectedPhaseFilterId) as PhaseFilter;
+        }
+
+        private Phase GetRoomPhase(Document doc, Room room)
+        {
+            if (doc == null || room == null)
+            {
+                return null;
+            }
+
+            var roomPhaseId = room.get_Parameter(BuiltInParameter.ROOM_PHASE_ID)?.AsElementId();
+            if (ElementIdCompat.IsValid(roomPhaseId))
+            {
+                return doc.GetElement(roomPhaseId) as Phase;
+            }
+
+            if (room.HasPhases() && ElementIdCompat.IsValid(room.CreatedPhaseId))
+            {
+                return doc.GetElement(room.CreatedPhaseId) as Phase;
+            }
+
+            return null;
+        }
+
+        private bool IsDoorInRoom(FamilyInstance door, Room room, Phase roomPhase)
+        {
+            if (door == null || room == null)
+            {
+                return false;
+            }
+
+            try
+            {
+                if (roomPhase != null)
+                {
+                    return door.get_Room(roomPhase)?.Id == room.Id
+                        || door.get_FromRoom(roomPhase)?.Id == room.Id
+                        || door.get_ToRoom(roomPhase)?.Id == room.Id;
+                }
+
+                return door.Room?.Id == room.Id
+                    || door.FromRoom?.Id == room.Id
+                    || door.ToRoom?.Id == room.Id;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private bool IsElementVisibleInPhase(Element element, Phase phase, PhaseFilter phaseFilter, bool usePhaseFilter)
+        {
+            if (element == null || phase == null || !usePhaseFilter || !element.HasPhases())
+            {
+                return true;
+            }
+
+            ElementOnPhaseStatus phaseStatus;
+            try
+            {
+                phaseStatus = element.GetPhaseStatus(phase.Id);
+            }
+            catch
+            {
+                return false;
+            }
+
+            if (phaseStatus == ElementOnPhaseStatus.Future
+                || phaseStatus == ElementOnPhaseStatus.Past
+                || phaseStatus == ElementOnPhaseStatus.None)
+            {
+                return false;
+            }
+
+            if (phaseFilter == null)
+            {
+                return phaseStatus != ElementOnPhaseStatus.Demolished;
+            }
+
+            return phaseFilter.GetPhaseStatusPresentation(phaseStatus) != PhaseStatusPresentation.DontShow;
+        }
+
         private CurveArray ApplyDoorPatchesToRoomCurves(
             Document doc,
             Room room,
             IList<IList<BoundarySegment>> loops,
             CurveArray roomCurves,
             double shortCurveTolerance,
-            double curveCreationTolerance)
+            double curveCreationTolerance,
+            PhaseFilter doorPhaseFilter,
+            bool filterDoorsByPhase)
         {
             if (doc == null || room == null || loops == null || roomCurves == null || roomCurves.Size < 3)
                 return roomCurves;
@@ -859,14 +980,14 @@ namespace FloorCreator
                 return roomCurves;
 
             var doorPatches = new List<(XYZ p1, XYZ p2, XYZ p3, XYZ p4)>();
+            Phase roomPhase = filterDoorsByPhase ? GetRoomPhase(doc, room) : null;
 
             var doorCollector = new FilteredElementCollector(doc)
                 .OfCategory(BuiltInCategory.OST_Doors)
                 .OfClass(typeof(FamilyInstance))
                 .Cast<FamilyInstance>()
-                .Where(d =>
-                    (d.FromRoom != null && d.FromRoom.Id == room.Id) ||
-                    (d.ToRoom != null && d.ToRoom.Id == room.Id))
+                .Where(d => IsElementVisibleInPhase(d, roomPhase, doorPhaseFilter, filterDoorsByPhase))
+                .Where(d => IsDoorInRoom(d, room, roomPhase))
                 .ToList();
 
             foreach (var door in doorCollector)

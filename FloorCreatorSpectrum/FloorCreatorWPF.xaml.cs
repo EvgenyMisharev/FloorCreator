@@ -17,15 +17,37 @@ namespace FloorCreator
         public double FloorLevelOffset;
 
         public bool FillDoorPatches => chk_FillDoorPatches.IsChecked == true;
+        public bool FilterDoorsByPhase { get; private set; }
+        public ElementId SelectedDoorPhaseFilterId { get; private set; } = ElementId.InvalidElementId;
 
         FloorCreatorSettings FloorCreatorSettingsItem = null;
+        private readonly List<PhaseFilterSelectionItem> _phaseFilterItems;
 
         public FloorCreatorWPF(System.Collections.Generic.List<FloorType> floorTypesList)
+            : this(
+                floorTypesList,
+                new List<PhaseFilterSelectionItem>(),
+                ElementId.InvalidElementId)
         {
+        }
+
+        public FloorCreatorWPF(
+            System.Collections.Generic.List<FloorType> floorTypesList,
+            IEnumerable<PhaseFilterSelectionItem> phaseFilterItems,
+            ElementId defaultPhaseFilterId)
+        {
+            _phaseFilterItems = phaseFilterItems?.ToList() ?? new List<PhaseFilterSelectionItem>();
+
             InitializeComponent();
 
             comboBox_FloorType.ItemsSource = floorTypesList;
             comboBox_FloorType.DisplayMemberPath = "Name";
+            comboBox_DoorPhaseFilter.ItemsSource = _phaseFilterItems;
+            comboBox_DoorPhaseFilter.DisplayMemberPath = nameof(PhaseFilterSelectionItem.Name);
+
+            comboBox_DoorPhaseFilter.SelectedItem = _phaseFilterItems
+                .FirstOrDefault(pf => ElementIdCompat.HasSameValue(pf.PhaseFilterId, defaultPhaseFilterId))
+                ?? _phaseFilterItems.FirstOrDefault();
 
             // Базовые дефолты (если файла нет/битый/пустой)
             rbt_ManualCreation.IsChecked = true;
@@ -36,6 +58,7 @@ namespace FloorCreator
 
             textBox_FloorLevelOffset.Text = "0";
             chk_FillDoorPatches.IsChecked = false;
+            chk_FilterDoorsByPhase.IsChecked = false;
 
             // Новая схема: GetSettings() почти всегда возвращает объект.
             FloorCreatorSettingsItem = FloorCreatorSettings.GetSettings();
@@ -47,7 +70,8 @@ namespace FloorCreator
                  !string.IsNullOrWhiteSpace(FloorCreatorSettingsItem.InRoomsSelectedName) ||
                  !string.IsNullOrWhiteSpace(FloorCreatorSettingsItem.FloorTypeName) ||
                  !string.IsNullOrWhiteSpace(FloorCreatorSettingsItem.FloorLevelOffset) ||
-                 FloorCreatorSettingsItem.FillDoorPatches);
+                 FloorCreatorSettingsItem.FillDoorPatches ||
+                 FloorCreatorSettingsItem.FilterDoorsByPhase);
 
             if (hasAnySavedValue)
             {
@@ -75,10 +99,12 @@ namespace FloorCreator
                         : "0";
 
                 chk_FillDoorPatches.IsChecked = FloorCreatorSettingsItem.FillDoorPatches;
+                chk_FilterDoorsByPhase.IsChecked = FloorCreatorSettingsItem.FilterDoorsByPhase;
             }
 
             // Обновляем доступность контролов после выставления радио
             groupBox_FloorCreationOption_Checked(null, null);
+            UpdateDoorPhaseSelectorState();
         }
 
         //Изменение опции создания полов
@@ -125,9 +151,7 @@ namespace FloorCreator
         {
             if (e.Key == Key.Enter || e.Key == Key.Space)
             {
-                SaveSettings();
-                DialogResult = true;
-                Close();
+                btn_Ok_Click(sender, e);
             }
 
             else if (e.Key == Key.Escape)
@@ -165,8 +189,50 @@ namespace FloorCreator
 
             // Чекбокс
             FloorCreatorSettingsItem.FillDoorPatches = chk_FillDoorPatches?.IsChecked == true;
+            FilterDoorsByPhase =
+                FloorCreatorSettingsItem.FillDoorPatches &&
+                chk_FilterDoorsByPhase?.IsChecked == true &&
+                comboBox_DoorPhaseFilter.SelectedItem is PhaseFilterSelectionItem;
+
+            if (FilterDoorsByPhase)
+            {
+                var selectedPhaseFilter = comboBox_DoorPhaseFilter.SelectedItem as PhaseFilterSelectionItem;
+                SelectedDoorPhaseFilterId = selectedPhaseFilter?.PhaseFilterId ?? ElementId.InvalidElementId;
+            }
+            else
+            {
+                SelectedDoorPhaseFilterId = ElementId.InvalidElementId;
+            }
+
+            FloorCreatorSettingsItem.FilterDoorsByPhase = FilterDoorsByPhase;
 
             FloorCreatorSettingsItem.SaveSettings();
+        }
+
+        private void CheckBox_DoorPatch_StateChanged(object sender, RoutedEventArgs e)
+        {
+            UpdateDoorPhaseSelectorState();
+        }
+
+        private void CheckBox_DoorPhase_StateChanged(object sender, RoutedEventArgs e)
+        {
+            UpdateDoorPhaseSelectorState();
+        }
+
+        private void UpdateDoorPhaseSelectorState()
+        {
+            if (chk_FillDoorPatches == null || chk_FilterDoorsByPhase == null || comboBox_DoorPhaseFilter == null)
+                return;
+
+            bool canUsePhase = chk_FillDoorPatches.IsChecked == true && _phaseFilterItems.Any();
+            chk_FilterDoorsByPhase.IsEnabled = canUsePhase;
+            if (!canUsePhase)
+            {
+                chk_FilterDoorsByPhase.IsChecked = false;
+            }
+
+            bool isEnabled = canUsePhase && chk_FilterDoorsByPhase.IsChecked == true;
+            comboBox_DoorPhaseFilter.IsEnabled = isEnabled && _phaseFilterItems.Any();
         }
 
         private static string NormalizeOffsetText(string input, out double value)
